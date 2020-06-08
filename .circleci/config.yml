@@ -1,13 +1,189 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
-version: 2.1
-# Use a package of configuration called an orb.
+---
+
+aliases:
+
+  - &terraform_init
+    name: terraform | init
+    command:
+      cd ${BUILD_ENV} && terraform init
+
+jobs:
+  manage_state_bucket:
+    executor: base
+    steps:
+      - checkout
+
+      - run: >-
+          sudo chown -R circleci:circleci
+          /usr/local/bin
+          /usr/local/lib/python3.8/site-packages
+      - restore_cache: &python_cache
+          key: python-{{ .Branch }}-{{ checksum "ansible_state_bucket/requirements.txt" }}
+      - run: 'sudo pip install pipenv'
+      - run:
+          command: |
+            cd ansible_state_bucket
+            ./exec.sh
+
+      - save_cache:
+          <<: *python_cache
+          paths:
+            - "./ansible_venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.8/site-packages"
+
+  terraform_validate:
+    executor: docker_terraform
+    steps:
+      - checkout
+
+      - run: *terraform_init
+      - run:
+          name: terraform | validate
+          command: |
+            cd ${BUILD_ENV} && terraform validate
+
+  terraform_plan:
+    executor: docker_terraform
+    steps:
+      - checkout
+
+      - run: *terraform_init
+      - run:
+          name: terraform | plan
+          command: |
+            cd ${BUILD_ENV}
+            terraform plan \
+              -out=".terraform/terraform.tfplan"
+
+      - persist_to_workspace:
+          root: './'
+          paths:
+            - '*/.terraform/*'
+
+  terraform_apply:
+    executor: docker_terraform
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: '.'
+
+      - run: *terraform_init
+      - run:
+          name: terraform | apply
+          command: |
+            cd ${BUILD_ENV} && \
+            terraform apply \
+              -auto-approve \
+              -lock=true \
+              -input=false \
+              -lock-timeout=120s \
+              -refresh=true \
+              .terraform/terraform.tfplan
+      - run:
+          name: terraform | output config_map_aws_auth
+          command: |
+            cd ${BUILD_ENV} && \
+            terraform output config_map_aws_auth > .terraform/output.configmap.yml && \
+            terraform output cluster_name > .terraform/output.cluster_name && \
+            terraform output kubeconfig > .terraform/output.kubeconfig
+
+      - persist_to_workspace:
+          root: './'
+          paths:
+            - '*/.terraform/*'
+
+  configure_eks:
+    executor: base
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: '.'
+
+      - kubernetes/install
+
+      - run:
+          name: manage kubectl config
+          command: |
+            mkdir ~/.kube/
+            cat ${BUILD_ENV}/.terraform/output.kubeconfig > ~/.kube/config
+
+      - aws-eks/install-eksctl
+
+      - run:
+          name: get cluster name from terraform output
+          command: |
+            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${BUILD_ENV}/.terraform/output.cluster_name )" >> $BASH_ENV
+
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+
+      - run:
+          name: apply configmap
+          command: |
+            kubectl version
+            kubectl apply -f ${BUILD_ENV}/.terraform/output.configmap.yml
+            kubectl get nodes -o wide
+
+      - run:
+          name: install helm
+          command: |
+            wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
+  aws-eks: circleci/aws-eks@0.2.7
+  kubernetes: circleci/kubernetes@0.11.0
+
+version: 2.1
+
+executors:
+  docker_terraform:
+    docker:
+      - image: 'hashicorp/terraform:0.12.24'
+    resource_class: 'small'
+    working_directory: '~/repo'
+    shell: /bin/sh -leo pipefail
+    environment:
+      - BASH_ENV: /etc/profile
+  base:
+    docker:
+      - image: 'circleci/python:3.8.1'
+    resource_class: 'small'
+    working_directory: '~/repo'
+    environment:
+      ANSIBLE_FORCE_COLOR: true
+
 workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
+  deploy_prod:
     jobs:
-      - welcome/run
+      - manage_state_bucket:
+          context: tf-eks-prod
+
+      - terraform_validate:
+          context: tf-eks-prod
+          requires:
+            - manage_state_bucket
+
+      - terraform_plan:
+          context: tf-eks-prod
+          requires:
+            - terraform_validate
+
+      - approve_prod:
+          type: approval
+          requires:
+            - manage_state_bucket
+            - terraform_validate
+            - terraform_plan
+
+      - terraform_apply:
+          context: tf-eks-prod
+          requires:
+            - terraform_plan
+            - approve_prod
+
+      - configure_eks:
+          context: tf-eks-prod
+          requires:
+            - terraform_apply
