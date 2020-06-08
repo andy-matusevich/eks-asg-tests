@@ -157,13 +157,13 @@ executors:
 workflows:
   deploy_prod:
     jobs:
-      - manage_state_bucket:
-          context: tf-eks-prod
+#      - manage_state_bucket:
+#          context: tf-eks-prod
 
       - terraform_validate:
           context: tf-eks-prod
-          requires:
-            - manage_state_bucket
+#          requires:
+#            - manage_state_bucket
 
       - terraform_plan:
           context: tf-eks-prod
@@ -173,7 +173,7 @@ workflows:
       - approve_prod:
           type: approval
           requires:
-            - manage_state_bucket
+#            - manage_state_bucket
             - terraform_validate
             - terraform_plan
 
