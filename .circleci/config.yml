@@ -8,29 +8,29 @@ aliases:
       cd ${BUILD_ENV} && terraform init
 
 jobs:
-  manage_state_bucket:
-    executor: base
-    steps:
-      - checkout
-
-      - run: >-
-          sudo chown -R circleci:circleci
-          /usr/local/bin
-          /usr/local/lib/python3.8/site-packages
-      - restore_cache: &python_cache
-          key: python-{{ .Branch }}-{{ checksum "ansible_state_bucket/requirements.txt" }}
-      - run: 'sudo pip install pipenv'
-      - run:
-          command: |
-            cd ansible_state_bucket
-            ./exec.sh
-
-      - save_cache:
-          <<: *python_cache
-          paths:
-            - "./ansible_venv"
-            - "/usr/local/bin"
-            - "/usr/local/lib/python3.8/site-packages"
+#  manage_state_bucket:
+#    executor: base
+#    steps:
+#      - checkout
+#
+#      - run: >-
+#          sudo chown -R circleci:circleci
+#          /usr/local/bin
+#          /usr/local/lib/python3.8/site-packages
+#      - restore_cache: &python_cache
+#          key: python-{{ .Branch }}-{{ checksum "ansible_state_bucket/requirements.txt" }}
+#      - run: 'sudo pip install pipenv'
+#      - run:
+#          command: |
+#            cd ansible_state_bucket
+#            ./exec.sh
+#
+#      - save_cache:
+#          <<: *python_cache
+#          paths:
+#            - "./ansible_venv"
+#            - "/usr/local/bin"
+#            - "/usr/local/lib/python3.8/site-packages"
 
   terraform_validate:
     executor: docker_terraform
