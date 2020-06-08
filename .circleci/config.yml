@@ -94,6 +94,25 @@ jobs:
           paths:
             - '*/terraform/*'
 
+  terraform_destroy:
+    executor: docker_terraform
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: '.'
+
+      - run: *terraform_init
+      - run:
+          name: terraform | destroy #terraform destroy -auto-approve -lock=true -lock-timeout=120s -refresh=true
+          command: |
+            cd ${BUILD_ENV}/terraform && \
+            terraform destroy \
+              -auto-approve \
+              -lock=true \
+              -lock-timeout=120s \
+              -refresh=true
+
   configure_eks:
     executor: base
     steps:
@@ -131,6 +150,8 @@ jobs:
           name: install helm
           command: |
             wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+
 orbs:
   aws-eks: circleci/aws-eks@0.2.7
   kubernetes: circleci/kubernetes@0.11.0
@@ -187,3 +208,13 @@ workflows:
           context: tf-eks-prod
           requires:
             - terraform_apply
+
+      - approve_terraform_destroy:
+          type: approval
+          requires:
+            - configure_eks
+
+      - terraform_destroy:
+          context: tf-eks-prod
+          requires:
+            - approve_terraform_destroy

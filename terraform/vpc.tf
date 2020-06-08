@@ -4,14 +4,15 @@ variable "region" {
 }
 
 provider "aws" {
-  version = ">= 2.28.1"
+  version = ">= 2.60.0"
   region  = "eu-central-1"
 }
 
 data "aws_availability_zones" "available" {}
 
 locals {
-  cluster_name = "eks-asg-tests-${random_string.suffix.result}"
+  #cluster_name = "eks-asg-tests-${random_string.suffix.result}"
+  cluster_name = "eks-asg-tests"
 }
 
 resource "random_string" "suffix" {
