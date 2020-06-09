@@ -5,7 +5,7 @@ aliases:
   - &terraform_init
     name: terraform | init
     command:
-      cd ${BUILD_ENV}/terraform && terraform init
+      cd ${CIRCLE_WORKING_DIRECTORY}/terraform && terraform init
 
 jobs:
 #  manage_state_bucket:
@@ -41,7 +41,7 @@ jobs:
       - run:
           name: terraform | validate
           command: |
-            cd ${BUILD_ENV}/terraform && terraform validate
+            cd ${CIRCLE_WORKING_DIRECTORY}/terraform && terraform validate
 
   terraform_plan:
     executor: docker_terraform
@@ -52,14 +52,14 @@ jobs:
       - run:
           name: terraform | plan
           command: |
-            cd ${BUILD_ENV}/terraform
+            cd ${CIRCLE_WORKING_DIRECTORY}/terraform
             terraform plan \
               -out=".terraform/terraform.tfplan"
 
       - persist_to_workspace:
           root: './'
           paths:
-            - '*/terraform/*'
+            - '*/.terraform/*'
 
   terraform_apply:
     executor: docker_terraform
@@ -73,7 +73,7 @@ jobs:
       - run:
           name: terraform | apply
           command: |
-            cd ${BUILD_ENV}/terraform && \
+            cd ${CIRCLE_WORKING_DIRECTORY}/terraform && \
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -84,7 +84,7 @@ jobs:
       - run:
           name: terraform | output config_map_aws_auth
           command: |
-            cd ${BUILD_ENV}/terraform && \
+            cd ${CIRCLE_WORKING_DIRECTORY}/terraform && \
             terraform output config_map_aws_auth > .terraform/output.configmap.yml && \
             terraform output cluster_name > .terraform/output.cluster_name && \
             terraform output kubeconfig > .terraform/output.kubeconfig
@@ -92,7 +92,7 @@ jobs:
       - persist_to_workspace:
           root: './'
           paths:
-            - '*/terraform/*'
+            - '*/.terraform/*'
 
   terraform_destroy:
     executor: docker_terraform
@@ -104,9 +104,9 @@ jobs:
 
       - run: *terraform_init
       - run:
-          name: terraform | destroy #terraform destroy -auto-approve -lock=true -lock-timeout=120s -refresh=true
+          name: terraform | destroy
           command: |
-            cd ${BUILD_ENV}/terraform && \
+            cd ${CIRCLE_WORKING_DIRECTORY}/terraform && \
             terraform destroy \
               -auto-approve \
               -lock=true \
@@ -127,14 +127,14 @@ jobs:
           name: manage kubectl config
           command: |
             mkdir ~/.kube/
-            cat ${BUILD_ENV}/.terraform/output.kubeconfig > ~/.kube/config
+            cat ${CIRCLE_WORKING_DIRECTORY}/terraform/.terraform/output.kubeconfig > ~/.kube/config
 
       - aws-eks/install-eksctl
 
       - run:
           name: get cluster name from terraform output
           command: |
-            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${BUILD_ENV}/.terraform/output.cluster_name )" >> $BASH_ENV
+            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${CIRCLE_WORKING_DIRECTORY}/terraform/.terraform/output.cluster_name )" >> $BASH_ENV
 
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
@@ -143,7 +143,7 @@ jobs:
           name: apply configmap
           command: |
             kubectl version
-            kubectl apply -f ${BUILD_ENV}/.terraform/output.configmap.yml
+            kubectl apply -f ${CIRCLE_WORKING_DIRECTORY}/terraform/.terraform/output.configmap.yml
             kubectl get nodes -o wide
 
       - run:
