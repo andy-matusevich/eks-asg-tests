@@ -89,9 +89,9 @@ jobs:
           name: terraform | output config_map_aws_auth
           command: |
             cd ${CIRCLE_WORKING_DIRECTORY}/terraform && \
-            terraform output config_map_aws_auth > .terraform/output.configmap.yml && \
-            terraform output cluster_name > .terraform/output.cluster_name && \
-            terraform output kubeconfig > .terraform/output.kubeconfig
+            terraform output config_map_aws_auth > terraform/.terraform/output.configmap.yml && \
+            terraform output cluster_name > terraform/.terraform/output.cluster_name && \
+            terraform output kubeconfig > terraform/.terraform/output.kubeconfig
 
       - persist_to_workspace:
           root: './'
