@@ -22,16 +22,16 @@ jobs:
           name: terraform | pre init
           command: |
             cd ${TF_PRE_DIR}
-            terraform init \
-              -var="tfstate_region=${AWS_DEFAULT_REGION}" \
-              -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
-              -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
+            terraform init
       - run:
           name: terraform | pre plan
           command: |
             cd ${TF_PRE_DIR}
             terraform plan \
-              -out=".terraform/terraform.tfplan"
+              -out=".terraform/terraform.tfplan" \
+              -var="tfstate_region=${AWS_DEFAULT_REGION}" \
+              -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
+              -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
       - run:
           name: terraform | pre apply
           command: |
