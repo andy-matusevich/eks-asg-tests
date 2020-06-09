@@ -5,7 +5,7 @@ aliases:
   - &terraform_init
     name: terraform | infra init
     command: |
-      cd ${CIRCLE_WORKING_DIRECTORY}/terraform/infra && \
+      cd ${TF_INFRA_FIR} && \
       terraform init \
         -backend-config="key=prod/terraform.tfstate" \
         -backend-config="bucket=eks-asg-tests"
@@ -37,26 +37,24 @@ jobs:
 
   terraform_prepare:
     executor: docker_terraform
-    environment:
-      TF_DIR: ${CIRCLE_WORKING_DIRECTORY}/terraform/pre
     steps:
       - checkout
 
       - run:
           name: terraform | pre init
           command: |
-            cd ${TF_DIR}
+            cd ${TF_PRE_DIR}
             terraform init
       - run:
           name: terraform | pre plan
           command: |
-            cd ${TF_DIR}
+            cd ${TF_PRE_DIR}
             terraform plan \
               -out=".terraform/terraform.tfplan"
       - run:
           name: terraform | pre apply
           command: |
-            cd ${TF_DIR} && \
+            cd ${TF_PRE_DIR} && \
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -74,7 +72,8 @@ jobs:
       - run:
           name: terraform | infra validate
           command: |
-            cd ${CIRCLE_WORKING_DIRECTORY}/terraform/infra && terraform validate
+            cd ${TF_INFRA_FIR}
+            terraform validate
 
   terraform_plan:
     executor: docker_terraform
@@ -85,7 +84,7 @@ jobs:
       - run:
           name: terraform | infra plan
           command: |
-            cd ${CIRCLE_WORKING_DIRECTORY}/terraform/infra
+            cd ${TF_INFRA_FIR}
             terraform plan \
               -out=".terraform/terraform.tfplan"
 
@@ -106,7 +105,7 @@ jobs:
       - run:
           name: terraform | infra apply
           command: |
-            cd ${CIRCLE_WORKING_DIRECTORY}/terraform/infra && \
+            cd ${TF_INFRA_FIR}
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -117,10 +116,10 @@ jobs:
       - run:
           name: terraform | output config_map_aws_auth
           command: |
-            cd ${CIRCLE_WORKING_DIRECTORY}/terraform/infra && \
-            terraform output config_map_aws_auth > terraform/.terraform/output.configmap.yml && \
-            terraform output cluster_name > terraform/.terraform/output.cluster_name && \
-            terraform output kubeconfig > terraform/.terraform/output.kubeconfig
+            cd ${TF_INFRA_FIR}
+            terraform output config_map_aws_auth > ${TF_INFRA_FIR}/.terraform/output.configmap.yml && \
+            terraform output cluster_name > ${TF_INFRA_FIR}/.terraform/output.cluster_name && \
+            terraform output kubeconfig > ${TF_INFRA_FIR}/.terraform/output.kubeconfig
 
       - persist_to_workspace:
           root: './'
@@ -139,7 +138,7 @@ jobs:
       - run:
           name: terraform | infra destroy
           command: |
-            cd ${CIRCLE_WORKING_DIRECTORY}/terraform/infra && \
+            cd ${TF_INFRA_FIR}
             terraform destroy \
               -auto-approve \
               -lock=true \
@@ -160,14 +159,14 @@ jobs:
           name: manage kubectl config
           command: |
             mkdir ~/.kube/
-            cat ${CIRCLE_WORKING_DIRECTORY}/terraform/infra/.terraform/output.kubeconfig > ~/.kube/config
+            cat ${TF_INFRA_FIR}/.terraform/output.kubeconfig > ~/.kube/config
 
       - aws-eks/install-eksctl
 
       - run:
           name: get cluster name from terraform output
           command: |
-            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${CIRCLE_WORKING_DIRECTORY}/terraform/infra/.terraform/output.cluster_name )" >> $BASH_ENV
+            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_FIR}/.terraform/output.cluster_name )" >> $BASH_ENV
 
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
@@ -176,7 +175,7 @@ jobs:
           name: apply configmap
           command: |
             kubectl version
-            kubectl apply -f ${CIRCLE_WORKING_DIRECTORY}/infra/terraform/.terraform/output.configmap.yml
+            kubectl apply -f ${TF_INFRA_FIR}/.terraform/output.configmap.yml
             kubectl get nodes -o wide
 
       - run:
