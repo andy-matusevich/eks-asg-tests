@@ -100,9 +100,9 @@ jobs:
               -out=".terraform/terraform.tfplan"
 
       - persist_to_workspace:
-          root: ${TF_INFRA_DIR}/
+          root: './'
           paths:
-            - './.terraform/*'
+            - 'infra/.terraform'
 
   terraform_apply:
     executor: docker_terraform
@@ -133,9 +133,9 @@ jobs:
             terraform output kubeconfig > ${TF_INFRA_DIR}/.terraform/output.kubeconfig
 
       - persist_to_workspace:
-          root: ${TF_INFRA_DIR}/
+          root: './'
           paths:
-            - './.terraform/*'
+            - '.infra/.terraform'
 
   terraform_destroy:
     executor: docker_terraform
