@@ -102,7 +102,7 @@ jobs:
       - persist_to_workspace:
           root: './'
           paths:
-            - 'infra/.terraform'
+            - 'terraform/infra/.terraform'
 
   terraform_apply:
     executor: docker_terraform
@@ -135,7 +135,7 @@ jobs:
       - persist_to_workspace:
           root: './'
           paths:
-            - '.infra/.terraform'
+            - 'terraform/infra/.terraform'
 
   terraform_destroy:
     executor: docker_terraform
