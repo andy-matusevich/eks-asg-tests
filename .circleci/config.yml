@@ -5,6 +5,10 @@ aliases:
   - &terraform_init
     name: terraform | init
     command:
+      whoami
+      echo ${HOME}
+      echo ${CIRCLE_WORKING_DIRECTORY}
+      ls -ahl .
       cd ${CIRCLE_WORKING_DIRECTORY}/terraform && terraform init
 
 jobs:
@@ -163,7 +167,7 @@ executors:
     docker:
       - image: 'hashicorp/terraform:0.12.24'
     resource_class: 'small'
-    working_directory: '~/repo'
+    working_directory: '/var/repo'
     shell: /bin/sh -leo pipefail
     environment:
       - BASH_ENV: /etc/profile
@@ -171,7 +175,7 @@ executors:
     docker:
       - image: 'circleci/python:3.8.1'
     resource_class: 'small'
-    working_directory: '~/repo'
+    working_directory: '/var/repo'
     environment:
       ANSIBLE_FORCE_COLOR: true
 
