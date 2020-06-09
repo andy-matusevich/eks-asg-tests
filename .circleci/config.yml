@@ -42,9 +42,6 @@ jobs:
     steps:
       - checkout
 
-      - attach_workspace:
-        at: '.'
-
       - run:
           name: terraform | pre init
           command: |
