@@ -5,7 +5,7 @@ aliases:
   - &terraform_init
     name: terraform | infra init
     command: |
-      cd ${TF_INFRA_FIR} && \
+      cd ${TF_INFRA_DIR} && \
       terraform init \
         -backend-config="key=prod/terraform.tfstate" \
         -backend-config="bucket=eks-asg-tests"
@@ -72,7 +72,7 @@ jobs:
       - run:
           name: terraform | infra validate
           command: |
-            cd ${TF_INFRA_FIR}
+            cd ${TF_INFRA_DIR}
             terraform validate
 
   terraform_plan:
@@ -84,7 +84,7 @@ jobs:
       - run:
           name: terraform | infra plan
           command: |
-            cd ${TF_INFRA_FIR}
+            cd ${TF_INFRA_DIR}
             terraform plan \
               -out=".terraform/terraform.tfplan"
 
@@ -105,7 +105,7 @@ jobs:
       - run:
           name: terraform | infra apply
           command: |
-            cd ${TF_INFRA_FIR}
+            cd ${TF_INFRA_DIR}
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -116,10 +116,10 @@ jobs:
       - run:
           name: terraform | output config_map_aws_auth
           command: |
-            cd ${TF_INFRA_FIR}
-            terraform output config_map_aws_auth > ${TF_INFRA_FIR}/.terraform/output.configmap.yml && \
-            terraform output cluster_name > ${TF_INFRA_FIR}/.terraform/output.cluster_name && \
-            terraform output kubeconfig > ${TF_INFRA_FIR}/.terraform/output.kubeconfig
+            cd ${TF_INFRA_DIR}
+            terraform output config_map_aws_auth > ${TF_INFRA_DIR}/.terraform/output.configmap.yml && \
+            terraform output cluster_name > ${TF_INFRA_DIR}/.terraform/output.cluster_name && \
+            terraform output kubeconfig > ${TF_INFRA_DIR}/.terraform/output.kubeconfig
 
       - persist_to_workspace:
           root: './'
@@ -138,7 +138,7 @@ jobs:
       - run:
           name: terraform | infra destroy
           command: |
-            cd ${TF_INFRA_FIR}
+            cd ${TF_INFRA_DIR}
             terraform destroy \
               -auto-approve \
               -lock=true \
@@ -159,14 +159,14 @@ jobs:
           name: manage kubectl config
           command: |
             mkdir ~/.kube/
-            cat ${TF_INFRA_FIR}/.terraform/output.kubeconfig > ~/.kube/config
+            cat ${TF_INFRA_DIR}/.terraform/output.kubeconfig > ~/.kube/config
 
       - aws-eks/install-eksctl
 
       - run:
           name: get cluster name from terraform output
           command: |
-            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_FIR}/.terraform/output.cluster_name )" >> $BASH_ENV
+            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_DIR}/.terraform/output.cluster_name )" >> $BASH_ENV
 
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
@@ -175,7 +175,7 @@ jobs:
           name: apply configmap
           command: |
             kubectl version
-            kubectl apply -f ${TF_INFRA_FIR}/.terraform/output.configmap.yml
+            kubectl apply -f ${TF_INFRA_DIR}/.terraform/output.configmap.yml
             kubectl get nodes -o wide
 
       - run:
