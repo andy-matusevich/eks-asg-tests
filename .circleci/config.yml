@@ -50,7 +50,10 @@ jobs:
               -auto-approve \
               -lock=true \
               -lock-timeout=120s \
-              -refresh=true
+              -refresh=true \
+              -var="tfstate_region=${AWS_DEFAULT_REGION}" \
+              -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
+              -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
           when: on_fail
 
   terraform_validate:
