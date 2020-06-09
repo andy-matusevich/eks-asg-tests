@@ -9,7 +9,7 @@ aliases:
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/terraform.tfstate" \
         -backend-config="bucket=${TF_STATE_BUCKETNAME}" \
-        -backend-config="${AWS_DEFAULT_REGION}"
+        -backend-config="region=${AWS_DEFAULT_REGION}"
 
 jobs:
 
