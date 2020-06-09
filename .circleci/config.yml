@@ -7,44 +7,25 @@ aliases:
     command: |
       cd ${TF_INFRA_DIR} && \
       terraform init \
-        -backend-config="key=prod/terraform.tfstate" \
-        -backend-config="bucket=eks-asg-tests"
+        -backend-config="key=${CI_ENVIRONMENT}/terraform.tfstate" \
+        -backend-config="bucket=${TF_STATE_BUCKETNAME}" \
+        -backend-config="${AWS_DEFAULT_REGION}" \
+        -force-copy
 
 jobs:
-#  manage_state_bucket:
-#    executor: base
-#    steps:
-#      - checkout
-#
-#      - run: >-
-#          sudo chown -R circleci:circleci
-#          /usr/local/bin
-#          /usr/local/lib/python3.8/site-packages
-#      - restore_cache: &python_cache
-#          key: python-{{ .Branch }}-{{ checksum "ansible_state_bucket/requirements.txt" }}
-#      - run: 'sudo pip install pipenv'
-#      - run:
-#          command: |
-#            cd ansible_state_bucket
-#            ./exec.sh
-#
-#      - save_cache:
-#          <<: *python_cache
-#          paths:
-#            - "./ansible_venv"
-#            - "/usr/local/bin"
-#            - "/usr/local/lib/python3.8/site-packages"
 
   terraform_prepare:
     executor: docker_terraform
     steps:
       - checkout
-
       - run:
           name: terraform | pre init
           command: |
             cd ${TF_PRE_DIR}
-            terraform init
+            terraform init \
+              -var="tfstate_region=${AWS_DEFAULT_REGION}" \
+              -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
+              -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
       - run:
           name: terraform | pre plan
           command: |
@@ -62,9 +43,8 @@ jobs:
               -lock-timeout=120s \
               -refresh=true \
               .terraform/terraform.tfplan
-
       - run:
-          name: terraform | pre destroy on_fail
+          name: terraform | pre destroy (on_fail)
           command: |
             cd ${TF_PRE_DIR}
             terraform destroy \
@@ -78,7 +58,6 @@ jobs:
     executor: docker_terraform
     steps:
       - checkout
-
       - run: *terraform_init
       - run:
           name: terraform | infra validate
@@ -90,7 +69,6 @@ jobs:
     executor: docker_terraform
     steps:
       - checkout
-
       - run: *terraform_init
       - run:
           name: terraform | infra plan
@@ -98,7 +76,6 @@ jobs:
             cd ${TF_INFRA_DIR}
             terraform plan \
               -out=".terraform/terraform.tfplan"
-
       - persist_to_workspace:
           root: './'
           paths:
@@ -108,10 +85,8 @@ jobs:
     executor: docker_terraform
     steps:
       - checkout
-
       - attach_workspace:
           at: '.'
-
       - run: *terraform_init
       - run:
           name: terraform | infra apply
@@ -131,7 +106,6 @@ jobs:
             terraform output config_map_aws_auth > ${TF_INFRA_DIR}/.terraform/output.configmap.yml && \
             terraform output cluster_name > ${TF_INFRA_DIR}/.terraform/output.cluster_name && \
             terraform output kubeconfig > ${TF_INFRA_DIR}/.terraform/output.kubeconfig
-
       - persist_to_workspace:
           root: './'
           paths:
@@ -141,10 +115,8 @@ jobs:
     executor: docker_terraform
     steps:
       - checkout
-
       - attach_workspace:
           at: '.'
-
       - run: *terraform_init
       - run:
           name: terraform | infra destroy
@@ -160,35 +132,27 @@ jobs:
     executor: base
     steps:
       - checkout
-
       - attach_workspace:
           at: '.'
-
       - kubernetes/install
-
       - run:
           name: manage kubectl config
           command: |
             mkdir ~/.kube/
             cat ${TF_INFRA_DIR}/.terraform/output.kubeconfig > ~/.kube/config
-
       - aws-eks/install-eksctl
-
       - run:
           name: get cluster name from terraform output
           command: |
             echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_DIR}/.terraform/output.cluster_name )" >> $BASH_ENV
-
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-
       - run:
           name: apply configmap
           command: |
             kubectl version
             kubectl apply -f ${TF_INFRA_DIR}/.terraform/output.configmap.yml
             kubectl get nodes -o wide
-
       - run:
           name: install helm
           command: |
@@ -202,6 +166,7 @@ orbs:
 version: 2.1
 
 executors:
+
   docker_terraform:
     docker:
       - image: 'hashicorp/terraform:0.12.24'
@@ -210,6 +175,7 @@ executors:
     shell: /bin/sh -leo pipefail
     environment:
       - BASH_ENV: /etc/profile
+
   base:
     docker:
       - image: 'circleci/python:3.8.1'
@@ -219,49 +185,39 @@ executors:
       ANSIBLE_FORCE_COLOR: true
 
 workflows:
+
   deploy_prod:
     jobs:
-#      - manage_state_bucket:
-#          context: tf-eks-prod
       - terraform_prepare:
-          context: tf-eks-prod
-
+          context: env-prod
       - terraform_validate:
-          context: tf-eks-prod
+          context: env-prod
           requires:
             - terraform_prepare
-#            - manage_state_bucket
-
       - terraform_plan:
-          context: tf-eks-prod
+          context: env-prod
           requires:
             - terraform_validate
-
       - approve_prod:
           type: approval
           requires:
-#            - manage_state_bucket
             - terraform_validate
             - terraform_plan
-
       - terraform_apply:
-          context: tf-eks-prod
+          context: env-prod
           requires:
             - terraform_plan
             - approve_prod
-
       - configure_eks:
-          context: tf-eks-prod
+          context: env-prod
           requires:
             - terraform_apply
-
       - approve_terraform_destroy:
           type: approval
           requires:
             - terraform_apply
             - configure_eks
-
       - terraform_destroy:
-          context: tf-eks-prod
+          context: env-prod
           requires:
             - approve_terraform_destroy
