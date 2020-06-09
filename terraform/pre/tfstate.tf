@@ -2,9 +2,9 @@ provider "aws" {
     region = var.tfstate_region
 }
 
-variable "state_region" {}
-variable "state_bucket" {}
-variable "state_lock_table" {}
+variable "tfstate_region" {}
+variable "tfstate_bucket" {}
+variable "tfstate_lock_table" {}
 
 resource "aws_s3_bucket" "tfstate-storage-s3" {
     bucket = var.tfstate_bucket
