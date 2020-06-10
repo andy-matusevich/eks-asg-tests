@@ -17,6 +17,7 @@ jobs:
     executor: docker_terraform
     steps:
       - checkout
+      - aws-cli/install
       - run:
           name: terraform | pre init
           command: |
@@ -32,6 +33,11 @@ jobs:
               -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
               -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
       - run:
+          name: terraform | check s3/dynamodb status
+          command: |
+            aws s3api get-bucket-location --bucket ${TF_STATE_BUCKETNAME} > /dev/null 2>&1 && \
+            aws dynamodb describe-table --table-name ${TF_STATE_LOCK_TABLE} > /dev/null 2>&1
+      - run:
           name: terraform | pre apply
           command: |
             cd ${TF_PRE_DIR} && \
@@ -39,21 +45,9 @@ jobs:
               -auto-approve \
               -lock=true \
               -input=false \
-              -lock-timeout=120s \
+              -lock-timeout=30s \
               -refresh=true \
               .terraform/terraform.tfplan
-      - run:
-          name: terraform | pre destroy (on_fail)
-          command: |
-            cd ${TF_PRE_DIR}
-            terraform destroy \
-              -auto-approve \
-              -lock=true \
-              -lock-timeout=120s \
-              -refresh=true \
-              -var="tfstate_region=${AWS_DEFAULT_REGION}" \
-              -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
-              -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
           when: on_fail
 
   terraform_validate:
@@ -162,6 +156,7 @@ jobs:
 
 
 orbs:
+  aws-cli: circleci/aws-cli@1.1.0
   aws-eks: circleci/aws-eks@0.2.7
   kubernetes: circleci/kubernetes@0.11.0
 
@@ -183,8 +178,7 @@ executors:
       - image: 'circleci/python:3.8.1'
     resource_class: 'small'
     working_directory: '/var/repo'
-    environment:
-      ANSIBLE_FORCE_COLOR: true
+
 
 workflows:
 
