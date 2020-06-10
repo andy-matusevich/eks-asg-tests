@@ -109,8 +109,9 @@ jobs:
           name: terraform | output config_map_aws_auth
           command: |
             cd ${TF_INFRA_DIR}
-            terraform output config_map_aws_auth > ${TF_INFRA_DIR}/.terraform/output.configmap.yml && \
-            terraform output cluster_name > ${TF_INFRA_DIR}/.terraform/output.cluster_name && \
+            terraform output
+            terraform output config_map_aws_auth > ${TF_INFRA_DIR}/.terraform/output.configmap.yml
+            terraform output cluster_name > ${TF_INFRA_DIR}/.terraform/output.cluster_name
             terraform output kubeconfig > ${TF_INFRA_DIR}/.terraform/output.kubeconfig
       - persist_to_workspace:
           root: './'
@@ -221,7 +222,6 @@ workflows:
           type: approval
           requires:
             - terraform_apply
-            - configure_eks
       - terraform_destroy:
           context: env-prod
           requires:
