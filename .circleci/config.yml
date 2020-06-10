@@ -18,14 +18,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: terraform | install aws-cli dependencies
-          command: |
-            apk add --no-cache --virtual .build-deps g++ python3-dev libffi-dev openssl-dev curl sudo && \
-            echo "Set disable_coredump false" >> /etc/sudo.conf && \
-            apk add --no-cache --update python3 && \
-            pip3 install --upgrade pip setuptools
-      - aws-cli/install
-      - run:
           name: terraform | pre init
           command: |
             cd ${TF_PRE_DIR}
@@ -42,6 +34,11 @@ jobs:
       - run:
           name: terraform | check s3/dynamodb status
           command: |
+            apk add --no-cache --virtual .build-deps g++ python3-dev libffi-dev openssl-dev curl sudo && \
+            echo "Set disable_coredump false" >> /etc/sudo.conf && \
+            apk add --no-cache --update python3 && \
+            pip3 install --upgrade pip setuptools && \
+            pip3 install awscli --upgrade && \
             aws s3api get-bucket-location --bucket ${TF_STATE_BUCKETNAME} > /dev/null 2>&1 && \
             aws dynamodb describe-table --table-name ${TF_STATE_LOCK_TABLE} > /dev/null 2>&1
       - run:
