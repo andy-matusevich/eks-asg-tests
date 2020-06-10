@@ -171,7 +171,6 @@ executors:
     docker:
       - image: 'hashicorp/terraform:0.12.24'
     resource_class: 'small'
-    working_directory: '~/repo'
     shell: /bin/sh -leo pipefail
     environment:
       - BASH_ENV: /etc/profile
