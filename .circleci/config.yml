@@ -160,7 +160,6 @@ jobs:
 
 
 orbs:
-  aws-cli: circleci/aws-cli@1.1.0
   aws-eks: circleci/aws-eks@0.2.7
   kubernetes: circleci/kubernetes@0.11.0
 
