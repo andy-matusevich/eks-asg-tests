@@ -137,6 +137,11 @@ jobs:
   configure_eks:
     executor: base
     steps:
+      - run:
+          name: create repo dir
+          command: |
+            sudo mkdir -p /var/repo && \
+            sudo chown circleci:circleci /var/repo/
       - checkout
       - attach_workspace:
           at: '.'
