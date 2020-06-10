@@ -5,7 +5,7 @@ aliases:
   - &terraform_init
     name: terraform | infra init
     command: |
-      cd ${TF_INFRA_DIR} && \
+      cd $HOME/repo/terraform/infra
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/terraform.tfstate" \
         -backend-config="bucket=${TF_STATE_BUCKETNAME}" \
@@ -20,12 +20,12 @@ jobs:
       - run:
           name: terraform | pre init
           command: |
-            cd ${TF_PRE_DIR}
+            cd $HOME/repo/terraform/pre
             terraform init
       - run:
           name: terraform | pre plan
           command: |
-            cd ${TF_PRE_DIR}
+            cd $HOME/repo/terraform/pre
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="tfstate_region=${AWS_DEFAULT_REGION}" \
@@ -45,7 +45,7 @@ jobs:
       - run:
           name: terraform | pre apply
           command: |
-            cd ${TF_PRE_DIR}
+            cd $HOME/repo/terraform/pre
             if [ ${CHECK_STATUS} != 0]; then
               terraform apply \
                 -auto-approve \
@@ -68,7 +68,7 @@ jobs:
       - run:
           name: terraform | infra validate
           command: |
-            cd ${TF_INFRA_DIR}
+            cd $HOME/repo/terraform/infra
             terraform validate
 
   terraform_plan:
@@ -79,7 +79,7 @@ jobs:
       - run:
           name: terraform | infra plan
           command: |
-            cd ${TF_INFRA_DIR}
+            cd $HOME/repo/terraform/infra
             terraform plan \
               -out=".terraform/terraform.tfplan"
       - persist_to_workspace:
@@ -97,7 +97,7 @@ jobs:
       - run:
           name: terraform | infra apply
           command: |
-            cd ${TF_INFRA_DIR}
+            cd $HOME/repo/terraform/infra
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -108,10 +108,10 @@ jobs:
       - run:
           name: terraform | output config_map_aws_auth
           command: |
-            cd ${TF_INFRA_DIR}
+            cd $HOME/repo/terraform/infra
             terraform output
-            terraform output cluster_name > ${TF_INFRA_DIR}/.terraform/output.cluster_name
-            terraform output kubeconfig > ${TF_INFRA_DIR}/.terraform/output.kubeconfig
+            terraform output cluster_name > $HOME/repo/terraform/infra/.terraform/output.cluster_name
+            terraform output kubeconfig > $HOME/repo/terraform/infra/.terraform/output.kubeconfig
       - persist_to_workspace:
           root: './'
           paths:
@@ -127,7 +127,7 @@ jobs:
       - run:
           name: terraform | infra destroy
           command: |
-            cd ${TF_INFRA_DIR}
+            cd $HOME/repo/terraform/infra
             terraform destroy \
               -auto-approve \
               -lock=true \
@@ -145,12 +145,12 @@ jobs:
           name: manage kubectl config
           command: |
             mkdir ~/.kube/
-            cat ${TF_INFRA_DIR}/.terraform/output.kubeconfig > ~/.kube/config
+            cat $HOME/repo/terraform/infra/.terraform/output.kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
       - run:
           name: get cluster name from terraform output
           command: |
-            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_DIR}/.terraform/output.cluster_name )" >> $BASH_ENV
+            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat $HOME/repo/terraform/infra/.terraform/output.cluster_name )" >> $BASH_ENV
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
       - run:
