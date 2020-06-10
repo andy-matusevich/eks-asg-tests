@@ -110,7 +110,6 @@ jobs:
           command: |
             cd ${TF_INFRA_DIR}
             terraform output
-            terraform output config_map_aws_auth > ${TF_INFRA_DIR}/.terraform/output.configmap.yml
             terraform output cluster_name > ${TF_INFRA_DIR}/.terraform/output.cluster_name
             terraform output kubeconfig > ${TF_INFRA_DIR}/.terraform/output.kubeconfig
       - persist_to_workspace:
@@ -148,18 +147,8 @@ jobs:
             mkdir ~/.kube/
             cat ${TF_INFRA_DIR}/.terraform/output.kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
-      - run:
-          name: get cluster name from terraform output
-          command: |
-            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_DIR}/.terraform/output.cluster_name )" >> $BASH_ENV
       - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-      - run:
-          name: apply configmap
-          command: |
-            kubectl version
-            kubectl apply -f ${TF_INFRA_DIR}/.terraform/output.configmap.yml
-            kubectl get nodes -o wide
+          cluster-name: "${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}"
       - run:
           name: install helm
           command: |
