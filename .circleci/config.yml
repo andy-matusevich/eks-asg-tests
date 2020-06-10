@@ -21,6 +21,7 @@ jobs:
           name: terraform | install aws-cli dependencies
           command: |
             apk add --no-cache --virtual .build-deps g++ python3-dev libffi-dev openssl-dev curl sudo && \
+            echo "Set disable_coredump false" >> /etc/sudo.conf && \
             apk add --no-cache --update python3 && \
             pip3 install --upgrade pip setuptools
       - aws-cli/install
