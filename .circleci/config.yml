@@ -147,8 +147,12 @@ jobs:
             mkdir ~/.kube/
             cat ${TF_INFRA_DIR}/.terraform/output.kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
+      - run:
+          name: get cluster name from terraform output
+          command: |
+            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat ${TF_INFRA_DIR}/.terraform/output.cluster_name )" >> $BASH_ENV
       - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: "${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}"
+          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
       - run:
           name: install helm
           command: |
