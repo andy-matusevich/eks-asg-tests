@@ -41,18 +41,24 @@ jobs:
             pip3 install awscli --upgrade && \
             aws s3api get-bucket-location --bucket ${TF_STATE_BUCKETNAME} > /dev/null 2>&1 && \
             aws dynamodb describe-table --table-name ${TF_STATE_LOCK_TABLE} > /dev/null 2>&1
+            export CHECK_STATUS=$?
       - run:
           name: terraform | pre apply
           command: |
-            cd ${TF_PRE_DIR} && \
-            terraform apply \
-              -auto-approve \
-              -lock=true \
-              -input=false \
-              -lock-timeout=30s \
-              -refresh=true \
-              .terraform/terraform.tfplan
-          when: on_fail
+            cd ${TF_PRE_DIR}
+            if [ ${CHECK_STATUS} != 0]; then
+              terraform apply \
+                -auto-approve \
+                -lock=true \
+                -input=false \
+                -lock-timeout=30s \
+                -refresh=true \
+                .terraform/terraform.tfplan;
+            else
+              echo -e "[${TF_STATE_BUCKETNAME}] bucket is already exists"
+              echo -e "[${TF_STATE_LOCK_TABLE}] table is already exists"
+              echo -e "Skipping applying tf plan"
+            fi
 
   terraform_validate:
     executor: docker_terraform
