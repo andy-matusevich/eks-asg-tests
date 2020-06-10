@@ -137,11 +137,6 @@ jobs:
   configure_eks:
     executor: base
     steps:
-      - run:
-          name: create repo dir
-          command: |
-            sudo mkdir -p /var/repo && \
-            sudo chown circleci:circleci /var/repo/
       - checkout
       - attach_workspace:
           at: '.'
@@ -176,7 +171,7 @@ executors:
     docker:
       - image: 'hashicorp/terraform:0.12.24'
     resource_class: 'small'
-    working_directory: '/var/repo'
+    working_directory: '~/repo'
     shell: /bin/sh -leo pipefail
     environment:
       - BASH_ENV: /etc/profile
@@ -185,7 +180,7 @@ executors:
     docker:
       - image: 'circleci/python:3.8.1'
     resource_class: 'small'
-    working_directory: '/var/repo'
+    working_directory: '~/repo'
 
 
 workflows:
