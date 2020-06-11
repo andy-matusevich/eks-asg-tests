@@ -46,7 +46,7 @@ jobs:
           name: terraform | pre apply
           command: |
             cd $HOME/repo/terraform/pre
-            if [ ${CHECK_STATUS} != 0]; then
+            if [ ${CHECK_STATUS} != 0 ]; then
               terraform apply \
                 -auto-approve \
                 -lock=true \
