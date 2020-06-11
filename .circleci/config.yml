@@ -117,22 +117,22 @@ jobs:
           paths:
             - 'terraform/*'
 
-  terraform_destroy:
-    executor: docker_terraform
-    steps:
-      - checkout
-      - attach_workspace:
-          at: '.'
-      - run: *terraform_init
-      - run:
-          name: terraform | infra destroy
-          command: |
-            cd $HOME/repo/terraform/infra
-            terraform destroy \
-              -auto-approve \
-              -lock=true \
-              -lock-timeout=120s \
-              -refresh=true
+#  terraform_destroy:
+#    executor: docker_terraform
+#    steps:
+#      - checkout
+#      - attach_workspace:
+#          at: '.'
+#      - run: *terraform_init
+#      - run:
+#          name: terraform | infra destroy
+#          command: |
+#            cd $HOME/repo/terraform/infra
+#            terraform destroy \
+#              -auto-approve \
+#              -lock=true \
+#              -lock-timeout=120s \
+#              -refresh=true
 
   configure_eks:
     executor: base
@@ -211,11 +211,11 @@ workflows:
           context: env-prod
           requires:
             - terraform_apply
-      - approve_terraform_destroy:
-          type: approval
-          requires:
-            - terraform_apply
-      - terraform_destroy:
-          context: env-prod
-          requires:
-            - approve_terraform_destroy
+#      - approve_terraform_destroy:
+#          type: approval
+#          requires:
+#            - terraform_apply
+#      - terraform_destroy:
+#          context: env-prod
+#          requires:
+#            - approve_terraform_destroy
