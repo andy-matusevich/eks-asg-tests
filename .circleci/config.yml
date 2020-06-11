@@ -11,6 +11,7 @@ aliases:
         -backend-config="bucket=${TF_STATE_BUCKETNAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
 
+
 jobs:
 
   terraform_prepare:
@@ -187,21 +188,27 @@ executors:
 
 workflows:
 
-  eks-preparation:
+  eks-prod:
     jobs:
       - terraform_prepare:
           context: env-prod
+          filters:
+            branches:
+              only: master
       - terraform_validate:
           context: env-prod
           requires:
             - terraform_prepare
+          filters:
+            branches:
+              only: master
       - terraform_plan:
           context: env-prod
           requires:
             - terraform_validate
-
-  eks-provisioning-prod:
-    jobs:
+          filters:
+            branches:
+              only: master
       - approve_prod:
           type: approval
           requires:
@@ -226,8 +233,27 @@ workflows:
             branches:
               only: master
 
-  eks-provisioning-staging:
+  eks-staging:
     jobs:
+      - terraform_prepare:
+          context: env-staging
+          filters:
+            branches:
+              ignore: master
+      - terraform_validate:
+          context: env-staging
+          requires:
+            - terraform_prepare
+          filters:
+            branches:
+              ignore: master
+      - terraform_plan:
+          context: env-staging
+          requires:
+            - terraform_validate
+          filters:
+            branches:
+              ignore: master
       - approve_staging:
           type: approval
           requires:
