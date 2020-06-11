@@ -187,7 +187,7 @@ executors:
 
 workflows:
 
-  eks-provisioning:
+  eks-preparation:
     jobs:
       - terraform_prepare:
           context: env-prod
@@ -200,7 +200,8 @@ workflows:
           requires:
             - terraform_validate
 
-      # prod flow
+  eks-provisioning-prod:
+    jobs:
       - approve_prod:
           type: approval
           requires:
@@ -225,7 +226,8 @@ workflows:
             branches:
               only: master
 
-      # staging flow
+  eks-provisioning-staging:
+    jobs:
       - approve_staging:
           type: approval
           requires:
