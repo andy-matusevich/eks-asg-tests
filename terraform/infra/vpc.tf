@@ -2,6 +2,10 @@ variable "region" {
   description = "AWS region"
 }
 
+variable "cluster_name" {
+  description = "EKS cluster name"
+}
+
 provider "aws" {
   version = ">= 2.60.0"
 }
