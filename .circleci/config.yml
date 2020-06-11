@@ -211,11 +211,3 @@ workflows:
           context: env-prod
           requires:
             - terraform_apply
-#      - approve_terraform_destroy:
-#          type: approval
-#          requires:
-#            - terraform_apply
-#      - terraform_destroy:
-#          context: env-prod
-#          requires:
-#            - approve_terraform_destroy
