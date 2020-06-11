@@ -20,7 +20,7 @@ output "kubeconfig" {
 
 output "region" {
   description = "AWS region"
-  value = var.aws_region
+  value = var.region
 }
 
 output "cluster_name" {
