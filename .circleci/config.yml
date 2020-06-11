@@ -41,7 +41,7 @@ jobs:
             pip3 install awscli --upgrade && \
             aws s3api get-bucket-location --bucket ${TF_STATE_BUCKETNAME} > /dev/null 2>&1 && \
             aws dynamodb describe-table --table-name ${TF_STATE_LOCK_TABLE} > /dev/null 2>&1
-            echo $? > .terraform/check.status
+            echo $? > $HOME/repo/terraform/pre/.terraform/check.status
       - run:
           name: terraform | pre apply
           command: |
