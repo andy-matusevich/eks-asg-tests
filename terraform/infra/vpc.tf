@@ -1,11 +1,11 @@
 variable "region" {
-  default     = var.default_region
+  default     = var.aws_region
   description = "AWS region"
 }
 
 provider "aws" {
   version = ">= 2.60.0"
-  region  = var.default_region
+  region  = var.aws_region
 }
 
 data "aws_availability_zones" "available" {}
