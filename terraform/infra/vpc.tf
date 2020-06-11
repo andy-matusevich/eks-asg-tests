@@ -1,19 +1,14 @@
 variable "region" {
-  default     = "eu-central-1"
+  default     = var.default_region
   description = "AWS region"
 }
 
 provider "aws" {
   version = ">= 2.60.0"
-  region  = "eu-central-1"
+  region  = var.default_region
 }
 
 data "aws_availability_zones" "available" {}
-
-locals {
-  #cluster_name = "eks-asg-tests-${random_string.suffix.result}"
-  cluster_name = "eks-asg-tests"
-}
 
 resource "random_string" "suffix" {
   length  = 4
@@ -34,16 +29,16 @@ module "vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 
   public_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
     "kubernetes.io/role/elb"                      = "1"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
     "kubernetes.io/role/internal-elb"             = "1"
   }
 }

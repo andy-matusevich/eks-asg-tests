@@ -81,7 +81,9 @@ jobs:
           command: |
             cd $HOME/repo/terraform/infra
             terraform plan \
-              -out=".terraform/terraform.tfplan"
+              -out=".terraform/terraform.tfplan" \
+              -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
+              -var="default_region=${AWS_DEFAULT_REGION}"
       - persist_to_workspace:
           root: './'
           paths:
