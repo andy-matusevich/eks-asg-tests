@@ -158,6 +158,7 @@ jobs:
             echo "export TFVAR_EKS_CLUSTER_NAME=$( cat $HOME/repo/terraform/infra/.terraform/output.cluster_name )" >> $BASH_ENV
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+          aws-region: "${AWS_REGION}"
       - run:
           name: install helm
           command: |

@@ -39,4 +39,3 @@ eks-asg-tests/
 * **S3 bucket key** --> `${CI_ENVIRONMENT}/${AWS_REGION}/terraform.tfstate`
 * **S3 bucket init region** --> `${AWS_DEFAULT_REGION}`
 * **DynamoDB locks tablename** --> `${CIRCLE_PROJECT_REPONAME}-tfstate-locks`
-* bucket --> `${CIRCLE_PROJECT_REPONAME}`
