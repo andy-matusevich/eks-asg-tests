@@ -14,7 +14,7 @@ module "eks" {
   subnets      = module.vpc.private_subnets
 
   tags = {
-    repo  = "eks-asg-tests"
+    repo  = var.cluster_name
   }
 
   vpc_id = module.vpc.vpc_id
@@ -29,7 +29,7 @@ module "eks" {
     },
     {
       name                          = "worker-group-2"
-      instance_type                 = "t2.micro"
+      instance_type                 = var.eks_instance_type
       additional_userdata           = "echo foo bar"
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
       asg_desired_capacity          = 1

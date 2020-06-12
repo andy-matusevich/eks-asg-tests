@@ -7,7 +7,7 @@ aliases:
     command: |
       cd $HOME/repo/terraform/infra
       terraform init \
-        -backend-config="key=${AWS_REGION}/${CI_ENVIRONMENT}/terraform.tfstate" \
+        -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/terraform.tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
 

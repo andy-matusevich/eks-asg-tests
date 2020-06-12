@@ -12,16 +12,11 @@ provider "aws" {
 
 data "aws_availability_zones" "available" {}
 
-resource "random_string" "suffix" {
-  length = 4
-  special = false
-}
-
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   version = "2.6.0"
 
-  name = "eks-asg-tests-vpc"
+  name = "${var.cluster_name}-vpc"
   cidr = "10.0.0.0/16"
   azs = data.aws_availability_zones.available.names
   private_subnets = [
