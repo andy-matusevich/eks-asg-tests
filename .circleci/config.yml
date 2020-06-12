@@ -53,7 +53,7 @@ jobs:
                 -input=false \
                 -lock-timeout=30s \
                 -refresh=true \
-                -target=tfstate-storage-s3 \
+                -target=aws_s3_bucket.tfstate-storage-s3 \
                 -var="tf_state_region=${AWS_DEFAULT_REGION}" \
                 -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
                 -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
@@ -71,7 +71,7 @@ jobs:
                 -input=false \
                 -lock-timeout=30s \
                 -refresh=true \
-                -target=tfstate-locks \
+                -target=aws_dynamodb_table.tfstate-locks \
                 -var="tf_state_region=${AWS_DEFAULT_REGION}" \
                 -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
                 -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
