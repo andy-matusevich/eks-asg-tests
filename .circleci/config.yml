@@ -23,15 +23,6 @@ jobs:
           command: |
             cd $HOME/repo/terraform/pre
             terraform init
-      #- run:
-      #    name: terraform | pre plan
-      #    command: |
-      #      cd $HOME/repo/terraform/pre
-      #      terraform plan \
-      #        -out=".terraform/terraform.tfplan" \
-              -var="tf_state_region=${AWS_DEFAULT_REGION}" \
-              -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-              -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
       - run:
           name: terraform | check s3/dynamodb status
           command: |
@@ -147,23 +138,6 @@ jobs:
           root: './'
           paths:
             - 'terraform/*'
-
-#  terraform_destroy:
-#    executor: docker_terraform
-#    steps:
-#      - checkout
-#      - attach_workspace:
-#          at: '.'
-#      - run: *terraform_init
-#      - run:
-#          name: terraform | infra destroy
-#          command: |
-#            cd $HOME/repo/terraform/infra
-#            terraform destroy \
-#              -auto-approve \
-#              -lock=true \
-#              -lock-timeout=120s \
-#              -refresh=true
 
   configure_eks:
     executor: base
