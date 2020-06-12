@@ -23,12 +23,12 @@ jobs:
           command: |
             cd $HOME/repo/terraform/pre
             terraform init
-      - run:
-          name: terraform | pre plan
-          command: |
-            cd $HOME/repo/terraform/pre
-            terraform plan \
-              -out=".terraform/terraform.tfplan" \
+      #- run:
+      #    name: terraform | pre plan
+      #    command: |
+      #      cd $HOME/repo/terraform/pre
+      #      terraform plan \
+      #        -out=".terraform/terraform.tfplan" \
               -var="tf_state_region=${AWS_DEFAULT_REGION}" \
               -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
               -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
@@ -63,7 +63,9 @@ jobs:
                 -lock-timeout=30s \
                 -refresh=true \
                 -target=tfstate-storage-s3 \
-                .terraform/terraform.tfplan;
+                -var="tf_state_region=${AWS_DEFAULT_REGION}" \
+                -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
             else
               echo -e "S3 bucket is already exists"
             fi
@@ -79,7 +81,9 @@ jobs:
                 -lock-timeout=30s \
                 -refresh=true \
                 -target=tfstate-locks \
-                .terraform/terraform.tfplan;
+                -var="tf_state_region=${AWS_DEFAULT_REGION}" \
+                -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
             else
               echo -e "DynamoDB table is already exists"
             fi
