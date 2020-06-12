@@ -35,30 +35,53 @@ jobs:
       - run:
           name: terraform | check s3/dynamodb status
           command: |
+            ### install awscli
             apk add --no-cache --virtual .build-deps g++ python3-dev libffi-dev openssl-dev curl sudo && \
             echo "Set disable_coredump false" >> /etc/sudo.conf && \
             apk add --no-cache --update python3 && \
             pip3 install --upgrade pip setuptools && \
-            pip3 install awscli --upgrade && \
+            pip3 install awscli --upgrade
+
+            ### check s3 state bucket
             aws s3api get-bucket-location --bucket ${CIRCLE_PROJECT_REPONAME} > /dev/null 2>&1 && \
-            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-locks > /dev/null 2>&1
-            echo $? > $HOME/repo/terraform/pre/.terraform/check.status
+            echo $? > $HOME/repo/terraform/pre/.terraform/s3.status || \
+            echo $? > $HOME/repo/terraform/pre/.terraform/s3.status && true
+
+            ### check lock table status
+            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-locks > /dev/null 2>&1 && \
+            echo $? > $HOME/repo/terraform/pre/.terraform/lock-table.status || \
+            echo $? > $HOME/repo/terraform/pre/.terraform/lock-table.status && true
       - run:
-          name: terraform | pre apply
+          name: terraform | apply tf state s3 bucket
           command: |
             cd $HOME/repo/terraform/pre
-            if [ $(cat .terraform/check.status) != 0 ]; then
+            if [ $(cat .terraform/s3.status) != 0 ]; then
               terraform apply \
                 -auto-approve \
                 -lock=true \
                 -input=false \
                 -lock-timeout=30s \
                 -refresh=true \
+                -target=tfstate-storage-s3 \
                 .terraform/terraform.tfplan;
             else
               echo -e "S3 bucket is already exists"
+            fi
+      - run:
+          name: terraform | apply lock dynamodb table
+          command: |
+            cd $HOME/repo/terraform/pre
+            if [ $(cat .terraform/lock-table.status) != 0 ]; then
+              terraform apply \
+                -auto-approve \
+                -lock=true \
+                -input=false \
+                -lock-timeout=30s \
+                -refresh=true \
+                -target=tfstate-locks \
+                .terraform/terraform.tfplan;
+            else
               echo -e "DynamoDB table is already exists"
-              echo -e "Skipping applying tf plan"
             fi
 
   terraform_validate:
