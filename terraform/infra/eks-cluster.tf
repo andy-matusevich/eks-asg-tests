@@ -6,6 +6,8 @@ provider "kubernetes" {
   version                = "~> 1.11"
 }
 
+variable "eks_instance_type" {}
+
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
   cluster_name = var.cluster_name
@@ -20,7 +22,7 @@ module "eks" {
   worker_groups = [
     {
       name                          = "worker-group-1"
-      instance_type                 = "t2.micro"
+      instance_type                 = var.eks_instance_type
       additional_userdata           = "echo foo bar"
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]

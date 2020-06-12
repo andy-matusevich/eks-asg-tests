@@ -8,7 +8,7 @@ aliases:
       cd $HOME/repo/terraform/infra
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/terraform.tfstate" \
-        -backend-config="bucket=${TF_STATE_BUCKETNAME}" \
+        -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
 
 
@@ -29,9 +29,9 @@ jobs:
             cd $HOME/repo/terraform/pre
             terraform plan \
               -out=".terraform/terraform.tfplan" \
-              -var="tfstate_region=${AWS_DEFAULT_REGION}" \
-              -var="tfstate_bucket=${TF_STATE_BUCKETNAME}" \
-              -var="tfstate_lock_table=${TF_STATE_LOCK_TABLE}"
+              -var="tf_state_region=${AWS_DEFAULT_REGION}" \
+              -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+              -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
       - run:
           name: terraform | check s3/dynamodb status
           command: |
@@ -40,8 +40,8 @@ jobs:
             apk add --no-cache --update python3 && \
             pip3 install --upgrade pip setuptools && \
             pip3 install awscli --upgrade && \
-            aws s3api get-bucket-location --bucket ${TF_STATE_BUCKETNAME} > /dev/null 2>&1 && \
-            aws dynamodb describe-table --table-name ${TF_STATE_LOCK_TABLE} > /dev/null 2>&1
+            aws s3api get-bucket-location --bucket ${CIRCLE_PROJECT_REPONAME} > /dev/null 2>&1 && \
+            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-locks > /dev/null 2>&1
             echo $? > $HOME/repo/terraform/pre/.terraform/check.status
       - run:
           name: terraform | pre apply
@@ -84,7 +84,8 @@ jobs:
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
-              -var="region=${AWS_DEFAULT_REGION}"
+              -var="region=${AWS_DEFAULT_REGION}" \
+              -var-file=${CI_ENVIRONMENT}.tfvars
       - persist_to_workspace:
           root: './'
           paths:
