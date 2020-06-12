@@ -7,7 +7,7 @@ aliases:
     command: |
       cd $HOME/repo/terraform/infra
       terraform init \
-        -backend-config="key=${CI_ENVIRONMENT}/terraform.tfstate" \
+        -backend-config="key=${AWS_REGION}/${CI_ENVIRONMENT}/terraform.tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
 
@@ -56,7 +56,7 @@ jobs:
                 -target=aws_s3_bucket.tfstate-storage-s3 \
                 -var="tf_state_region=${AWS_DEFAULT_REGION}" \
                 -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
+                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-tfstate-locks"
             else
               echo -e "S3 bucket is already exists"
             fi
@@ -74,7 +74,7 @@ jobs:
                 -target=aws_dynamodb_table.tfstate-locks \
                 -var="tf_state_region=${AWS_DEFAULT_REGION}" \
                 -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-locks"
+                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-tfstate-locks"
             else
               echo -e "DynamoDB table is already exists"
             fi
@@ -102,7 +102,7 @@ jobs:
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
-              -var="region=${AWS_DEFAULT_REGION}" \
+              -var="region=${AWS_REGION}" \
               -var-file=${CI_ENVIRONMENT}.tfvars
       - persist_to_workspace:
           root: './'

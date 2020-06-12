@@ -18,8 +18,9 @@ eks-asg-tests/
 
 ##### Project vars (Project settings --> Environment Variables)
 * `AWS_ACCESS_KEY_ID`
-* `AWS_DEFAULT_REGION`
 * `AWS_SECRET_ACCESS_KEY`
+* `AWS_DEFAULT_REGION`
+* `AWS_REGION`
 
 ---
 #### Terraform
