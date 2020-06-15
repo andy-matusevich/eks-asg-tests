@@ -158,12 +158,25 @@ jobs:
           command: |
             echo "export TFVAR_EKS_CLUSTER_NAME=$( cat $HOME/repo/terraform/infra/.terraform/output.cluster_name )" >> $BASH_ENV
       - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
           aws-region: "${AWS_REGION}"
-      - run:
-          name: install helm
-          command: |
-            wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+      - aws-eks/install-helm-on-cluster:
+          aws-region: "${AWS_REGION}"
+          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+
+
+  eks_deploy_nginx:
+    executor: base
+    steps:
+      - checkout
+      - attach_workspace:
+          at: '.'
+      - aws-eks/install-helm-chart:
+          aws-region: "${AWS_REGION}"
+          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+          chart: "nginx-stable/nginx-ingress"
+          namespace: "ns-nginx"
+          release-name: "nginx-release"
 
 
 orbs:
