@@ -160,22 +160,10 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           aws-region: "${AWS_REGION}"
           cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-      - aws-eks/install-helm-on-cluster:
-          aws-region: "${AWS_REGION}"
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-
-  eks_deploy_nginx:
-    executor: base
-    steps:
-      - checkout
-      - attach_workspace:
-          at: '.'
-      - aws-eks/install-helm-chart:
-          aws-region: "${AWS_REGION}"
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-          chart: "nginx-stable/nginx-ingress"
-          namespace: "ns-nginx"
-          release-name: "nginx-release"
+      - run:
+          name: install helm
+          command: |
+            wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
 
 orbs:
