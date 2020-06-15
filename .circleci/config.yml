@@ -287,7 +287,8 @@ workflows:
           filters:
             branches:
               ignore: master
-      - install-nginx:
+      - run:
+          name: install nginx
           context: env-staging
           command:
             - checkout
