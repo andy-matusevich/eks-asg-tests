@@ -140,7 +140,7 @@ jobs:
           paths:
             - 'terraform/*'
 
-  configure_eks:
+  install_apps:
     executor: base
     steps:
       - checkout
@@ -164,17 +164,6 @@ jobs:
           name: install helm
           command: |
             wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      - persist_to_workspace:
-          root: './'
-          paths:
-            - 'terraform/*'
-
-  install_apps:
-    executor: base
-    steps:
-      - checkout
-      - attach_workspace:
-          at: '.'
       - run:
           name: install nginx
           command: |
@@ -183,7 +172,10 @@ jobs:
             kubectl create namespace nginx
             helm install nginx bitnami/nginx \
               --namespace nginx
-
+      - persist_to_workspace:
+          root: './'
+          paths:
+            - 'terraform/*'
 
 orbs:
   aws-eks: circleci/aws-eks@0.2.7
@@ -248,7 +240,7 @@ workflows:
           filters:
             branches:
               only: master
-      - configure_eks:
+      - install_apps:
           context: env-prod
           requires:
             - terraform_apply
@@ -293,17 +285,10 @@ workflows:
           filters:
             branches:
               ignore: master
-      - configure_eks:
-          context: env-staging
-          requires:
-            - terraform_apply
-          filters:
-            branches:
-              ignore: master
       - install_apps:
           context: env-staging
           requires:
-            - configure_eks
+            - terraform_apply
           filters:
             branches:
               ignore: master
