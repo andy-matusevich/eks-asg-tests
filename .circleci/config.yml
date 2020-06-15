@@ -152,6 +152,7 @@ jobs:
           command: |
             mkdir ~/.kube/
             cat $HOME/repo/terraform/infra/.terraform/output.kubeconfig > ~/.kube/config
+            cp -R ~/.kube .
       - aws-eks/install-eksctl
       - run:
           name: get cluster name from terraform output
@@ -164,6 +165,11 @@ jobs:
           name: install helm
           command: |
             wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - persist_to_workspace:
+          root: './'
+          paths:
+            - 'terraform/*'
+            - '.kube/*'
 
 
 orbs:
@@ -281,12 +287,18 @@ workflows:
           filters:
             branches:
               ignore: master
-      - aws-eks/install-helm-chart:
-          aws-region: "${AWS_REGION}"
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-          chart: "nginx-stable/nginx-ingress"
-          namespace: "nginx-namespace"
-          release-name: "nginx-release"
+      - install-nginx:
+          context: env-staging
+          command:
+            - checkout
+            - attach_workspace:
+                at: '.'
+            - aws-eks/install-helm-chart:
+                aws-region: "${AWS_REGION}"
+                cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+                chart: "nginx-stable/nginx-ingress"
+                namespace: "nginx-namespace"
+                release-name: "nginx-release"
           requires:
             - configure_eks
           filters:
