@@ -102,6 +102,7 @@ jobs:
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
+              -var="environment=${CI_ENVIRONMENT}" \
               -var="region=${AWS_REGION}" \
               -var-file=${CI_ENVIRONMENT}.tfvars
       - persist_to_workspace:

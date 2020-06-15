@@ -14,7 +14,8 @@ module "eks" {
   subnets      = module.vpc.private_subnets
 
   tags = {
-    repo  = var.cluster_name
+    repo        = var.cluster_name
+    environment = var.environment
   }
 
   vpc_id = module.vpc.vpc_id
@@ -23,14 +24,12 @@ module "eks" {
     {
       name                          = "worker-group-1"
       instance_type                 = var.eks_instance_type
-      additional_userdata           = "echo foo bar"
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
     },
     {
       name                          = "worker-group-2"
       instance_type                 = var.eks_instance_type
-      additional_userdata           = "echo foo bar"
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
       asg_desired_capacity          = 1
     },
