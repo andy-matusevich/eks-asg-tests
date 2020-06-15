@@ -152,7 +152,6 @@ jobs:
           command: |
             mkdir ~/.kube/
             cat $HOME/repo/terraform/infra/.terraform/output.kubeconfig > ~/.kube/config
-            cp -R ~/.kube .
       - aws-eks/install-eksctl
       - run:
           name: get cluster name from terraform output
@@ -169,7 +168,21 @@ jobs:
           root: './'
           paths:
             - 'terraform/*'
-            - '.kube/*'
+
+  install_apps:
+    executor: base
+    steps:
+      - checkout
+      - attach_workspace:
+          at: '.'
+      - run:
+          name: install nginx
+          command: |
+            helm repo add bitnami https://charts.bitnami.com/bitnami
+            helm repo update
+            kubectl create namespace nginx
+            helm install nginx bitnami/nginx \
+              --namespace nginx
 
 
 orbs:
@@ -287,21 +300,11 @@ workflows:
           filters:
             branches:
               ignore: master
-      - run:
-          name: install nginx
+      - install_apps:
           context: env-staging
-          command:
-            - checkout
-            - attach_workspace:
-                at: '.'
-            - aws-eks/install-helm-chart:
-                aws-region: "${AWS_REGION}"
-                cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-                chart: "nginx-stable/nginx-ingress"
-                namespace: "nginx-namespace"
-                release-name: "nginx-release"
           requires:
             - configure_eks
           filters:
             branches:
               ignore: master
+
