@@ -165,19 +165,6 @@ jobs:
           command: |
             wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-  eks_deploy_nginx:
-    executor: base
-    steps:
-      - checkout
-      - attach_workspace:
-          at: '.'
-      - aws-eks/install-helm-chart:
-          aws-region: "${AWS_REGION}"
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
-          chart: "nginx-stable/nginx-ingress"
-          namespace: "ns-nginx"
-          release-name: "nginx-release"
-
 
 orbs:
   aws-eks: circleci/aws-eks@0.2.7
@@ -249,13 +236,6 @@ workflows:
           filters:
             branches:
               only: master
-      - eks_deploy_nginx:
-          context: env-prod
-          requires:
-            - configure_eks
-          filters:
-            branches:
-              only: master
 
   eks-staging:
     jobs:
@@ -301,8 +281,12 @@ workflows:
           filters:
             branches:
               ignore: master
-      - eks_deploy_nginx:
-          context: env-prod
+      - aws-eks/install-helm-chart:
+          aws-region: "${AWS_REGION}"
+          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
+          chart: "nginx-stable/nginx-ingress"
+          namespace: "nginx-namespace"
+          release-name: "nginx-release"
           requires:
             - configure_eks
           filters:
