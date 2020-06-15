@@ -35,6 +35,7 @@ module "eks" {
       asg_desired_capacity          = 1
     },
   ]
+
 }
 
 data "aws_eks_cluster" "cluster" {

@@ -54,9 +54,9 @@ jobs:
                 -lock-timeout=30s \
                 -refresh=true \
                 -target=aws_s3_bucket.tfstate-storage-s3 \
-                -var="tf_state_region=${AWS_DEFAULT_REGION}" \
-                -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-tfstate-locks"
+                -var="state_region=${AWS_DEFAULT_REGION}" \
+                -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+                -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-tfstate-locks"
             else
               echo -e "S3 bucket is already exists"
             fi
@@ -72,9 +72,9 @@ jobs:
                 -lock-timeout=30s \
                 -refresh=true \
                 -target=aws_dynamodb_table.tfstate-locks \
-                -var="tf_state_region=${AWS_DEFAULT_REGION}" \
-                -var="tf_state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-                -var="tf_state_lock_table=${CIRCLE_PROJECT_REPONAME}-tfstate-locks"
+                -var="state_region=${AWS_DEFAULT_REGION}" \
+                -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+                -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-tfstate-locks"
             else
               echo -e "DynamoDB table is already exists"
             fi

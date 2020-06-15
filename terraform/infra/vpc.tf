@@ -31,6 +31,7 @@ module "vpc" {
   single_nat_gateway = true
   enable_dns_hostnames = true
 
+  # https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html
   tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
