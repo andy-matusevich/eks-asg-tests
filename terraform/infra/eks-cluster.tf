@@ -10,6 +10,10 @@ variable "eks_instance_type" {
   default = "t2.micro"
 }
 
+locals {
+  k8s_tag = "kubernetes.io/cluster/${var.cluster_name}"
+}
+
 
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
@@ -29,18 +33,12 @@ module "eks" {
       instance_type                 = var.eks_instance_type
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
-      tags                          = {
-        "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-      }
     },
     {
       name                          = "worker-group-2"
       instance_type                 = var.eks_instance_type
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
       asg_desired_capacity          = 1
-      tags                          = {
-        "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-      }
+      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
     },
   ]
 

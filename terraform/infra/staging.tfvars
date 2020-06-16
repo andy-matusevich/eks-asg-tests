@@ -1,1 +1,1 @@
-eks_instance_type = "t2.micro"
+eks_instance_type = "t2.small"
