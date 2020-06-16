@@ -150,7 +150,7 @@ jobs:
       - run:
           name: manage kubectl config
           command: |
-            mkdir ~/.kube/
+            mkdir -p ~/.kube/
             cat $HOME/repo/terraform/infra/.terraform/output.kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
       - run:
@@ -170,8 +170,10 @@ jobs:
             helm repo add bitnami https://charts.bitnami.com/bitnami
             helm repo update
             kubectl create namespace nginx
-            helm install nginx bitnami/nginx \
-              --namespace nginx
+            helm install nginx bitnami/nginx --namespace nginx
+            export SERVICE_IP=$(kubectl get svc --namespace nginx nginx --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
+            echo "NGINX URL: http://$SERVICE_IP/"
+
       - persist_to_workspace:
           root: './'
           paths:
