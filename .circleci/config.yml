@@ -128,13 +128,21 @@ jobs:
               -lock-timeout=120s \
               -refresh=true \
               .terraform/terraform.tfplan
+      - kubernetes/install
       - run:
-          name: terraform | output config_map_aws_auth
+          name: eks | manage kubectl config
           command: |
             cd $HOME/repo/terraform/infra
-            terraform output
-            terraform output cluster_name > $HOME/repo/terraform/infra/.terraform/output.cluster_name
-            terraform output kubeconfig > $HOME/repo/terraform/infra/.terraform/output.kubeconfig
+            mkdir -p ~/.kube/
+            terraform output kubeconfig > ~/.kube/config
+      - aws-eks/install-eksctl
+      - run:
+          name: eks | get cluster name from terraform output
+          command: |
+            echo "export AWS_EKS_CLUSTER_NAME=$( terraform output cluster_name )" >> $BASH_ENV
+      - aws-eks/update-kubeconfig-with-authenticator:
+          aws-region: "${AWS_REGION}"
+          cluster-name: "${AWS_EKS_CLUSTER_NAME}"
       - persist_to_workspace:
           root: './'
           paths:
@@ -146,20 +154,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: '.'
-      - kubernetes/install
-      - run:
-          name: manage kubectl config
-          command: |
-            mkdir -p ~/.kube/
-            cat $HOME/repo/terraform/infra/.terraform/output.kubeconfig > ~/.kube/config
-      - aws-eks/install-eksctl
-      - run:
-          name: get cluster name from terraform output
-          command: |
-            echo "export TFVAR_EKS_CLUSTER_NAME=$( cat $HOME/repo/terraform/infra/.terraform/output.cluster_name )" >> $BASH_ENV
-      - aws-eks/update-kubeconfig-with-authenticator:
-          aws-region: "${AWS_REGION}"
-          cluster-name: "${TFVAR_EKS_CLUSTER_NAME}"
       - run:
           name: install helm
           command: |

@@ -29,16 +29,18 @@ module "eks" {
 
   worker_groups = [
     {
-      name                          = "worker-group-1"
+      name                          = "monitoring-group"
       instance_type                 = var.eks_instance_type
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
+      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=monitoring"
     },
     {
-      name                          = "worker-group-2"
+      name                          = "applications-group"
       instance_type                 = var.eks_instance_type
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
+      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=applications"
     },
   ]
 
