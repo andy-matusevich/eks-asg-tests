@@ -138,6 +138,7 @@ jobs:
           name: eks | get cluster name from terraform output
           command: |
             echo "export AWS_EKS_CLUSTER_NAME=$( terraform output cluster_name )" >> $BASH_ENV
+      - aws-cli/setup
       - aws-eks/update-kubeconfig-with-authenticator:
           aws-region: "${AWS_REGION}"
           cluster-name: "${AWS_EKS_CLUSTER_NAME}"
@@ -171,6 +172,7 @@ jobs:
 orbs:
   aws-eks: circleci/aws-eks@0.2.7
   kubernetes: circleci/kubernetes@0.11.0
+  aws-cli: circleci/aws-cli@1.1.0
 
 version: 2.1
 
