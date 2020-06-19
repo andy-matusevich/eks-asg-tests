@@ -116,19 +116,6 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           aws-region: "${AWS_REGION}"
           cluster-name: "${CIRCLE_PROJECT_REPONAME}"
-      - persist_to_workspace:
-          root: './'
-          paths:
-            - 'terraform/*'
-            - '../.kube/*'
-
-  install_ingress:
-    executor: docker_terraform
-    working_directory: '~/repo'
-    steps:
-      - checkout
-      - attach_workspace:
-          at: '.'
       - run:
           name: install helm
           command: |
