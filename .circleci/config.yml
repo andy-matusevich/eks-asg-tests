@@ -25,11 +25,8 @@ jobs:
             cd terraform/pre
             terraform init
       - run:
-          name: terraform | install aws cli dependencies
-          command: |
-            apk add --no-cache --update curl sudo
-            echo "Set disable_coredump false" >> /etc/sudo.conf
-      - aws-cli/setup
+          name: terraform | install aws cli
+          command: .circleci/aws-cli-install.sh
       - run:
           name: terraform | apply tf state s3 bucket
           command: |
@@ -83,10 +80,8 @@ jobs:
       - attach_workspace:
           at: '.'
       - run:
-          command: |
-            cd terraform/infra
-            apk add --no-cache --update curl sudo
-            echo "Set disable_coredump false" >> /etc/sudo.conf
+          name: terraform | install aws cli
+          command: .circleci/aws-cli-install.sh
       - run: *terraform_init
       - run:
           name: terraform | infra plan
