@@ -26,7 +26,7 @@ jobs:
             terraform init
       - run:
           name: terraform | install aws cli
-          command: .circleci/aws-cli-install.sh
+          command: sh .circleci/aws-cli-install.sh
       - run:
           name: terraform | apply tf state s3 bucket
           command: |
@@ -81,7 +81,7 @@ jobs:
           at: '.'
       - run:
           name: terraform | install aws cli
-          command: .circleci/aws-cli-install.sh
+          command: sh .circleci/aws-cli-install.sh
       - run: *terraform_init
       - run:
           name: terraform | infra plan
