@@ -5,6 +5,7 @@ aliases:
   - &terraform_init
     name: terraform | infra init
     command: |
+      cd terraform/infra
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/terraform.tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
@@ -85,12 +86,12 @@ jobs:
     working_directory: '~/repo'
     steps:
       - checkout
-      - run:
-          command: cd terraform/infra
       - run: *terraform_init
       - run:
           name: terraform | infra validate
-          command: terraform validate
+          command: |
+            cd terraform/infra
+            terraform validate
 
   terraform_apply:
     executor: docker_terraform
@@ -107,6 +108,7 @@ jobs:
       - run:
           name: terraform | infra plan
           command: |
+            cd terraform/infra
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
@@ -116,6 +118,7 @@ jobs:
       - run:
           name: terraform | infra apply
           command: |
+            cd terraform/infra
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -127,6 +130,7 @@ jobs:
       - run:
           name: eks | manage kubectl config
           command: |
+            cd terraform/infra
             mkdir -p ~/.kube/
             terraform output kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
