@@ -204,14 +204,12 @@ workflows:
           type: approval
           requires:
             - terraform_validate
-            - terraform_plan
           filters:
             branches:
               only: master
       - terraform_apply:
           context: env-prod
           requires:
-            - terraform_plan
             - approve_prod
           filters:
             branches:
@@ -242,14 +240,12 @@ workflows:
           type: approval
           requires:
             - terraform_validate
-            - terraform_plan
           filters:
             branches:
               ignore: master
       - terraform_apply:
           context: env-staging
           requires:
-            - terraform_plan
             - approve_staging
           filters:
             branches:
