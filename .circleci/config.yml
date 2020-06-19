@@ -5,7 +5,6 @@ aliases:
   - &terraform_init
     name: terraform | infra init
     command: |
-      cd $HOME/repo/terraform/infra
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/terraform.tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
@@ -16,13 +15,14 @@ jobs:
 
   terraform_prepare:
     executor: docker_terraform
+    working_directory: '~/repo'
     steps:
       - checkout
       - run:
+          command: cd terraform/pre
+      - run:
           name: terraform | pre init
-          command: |
-            cd $HOME/repo/terraform/pre
-            terraform init
+          command: terraform init
       - run:
           name: terraform | check s3/dynamodb status
           command: |
@@ -35,17 +35,16 @@ jobs:
 
             ### check s3 state bucket
             aws s3api get-bucket-location --bucket ${CIRCLE_PROJECT_REPONAME} > /dev/null 2>&1 && \
-            echo $? > $HOME/repo/terraform/pre/.terraform/s3.status || \
-            echo $? > $HOME/repo/terraform/pre/.terraform/s3.status && true
+            echo $? > .terraform/s3.status || \
+            echo $? > .terraform/s3.status && true
 
             ### check lock table status
             aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-locks > /dev/null 2>&1 && \
-            echo $? > $HOME/repo/terraform/pre/.terraform/lock-table.status || \
-            echo $? > $HOME/repo/terraform/pre/.terraform/lock-table.status && true
+            echo $? > .terraform/lock-table.status || \
+            echo $? > .terraform/lock-table.status && true
       - run:
           name: terraform | apply tf state s3 bucket
           command: |
-            cd $HOME/repo/terraform/pre
             if [ $(cat .terraform/s3.status) != 0 ]; then
               terraform apply \
                 -auto-approve \
@@ -63,7 +62,6 @@ jobs:
       - run:
           name: terraform | apply lock dynamodb table
           command: |
-            cd $HOME/repo/terraform/pre
             if [ $(cat .terraform/lock-table.status) != 0 ]; then
               terraform apply \
                 -auto-approve \
@@ -81,46 +79,40 @@ jobs:
 
   terraform_validate:
     executor: docker_terraform
+    working_directory: '~/repo'
     steps:
       - checkout
+      - run:
+          command: cd terraform/infra
       - run: *terraform_init
       - run:
           name: terraform | infra validate
-          command: |
-            cd $HOME/repo/terraform/infra
-            terraform validate
+          command: terraform validate
 
-  terraform_plan:
+  terraform_apply:
     executor: docker_terraform
+    working_directory: '~/repo'
     steps:
       - checkout
+      - attach_workspace:
+          at: '.'
+      - run:
+          command: |
+            cd terraform/infra
+            apk update && apk add curl
       - run: *terraform_init
       - run:
           name: terraform | infra plan
           command: |
-            cd $HOME/repo/terraform/infra
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
               -var="environment=${CI_ENVIRONMENT}" \
               -var="region=${AWS_REGION}" \
               -var-file=${CI_ENVIRONMENT}.tfvars
-      - persist_to_workspace:
-          root: './'
-          paths:
-            - 'terraform/*'
-
-  terraform_apply:
-    executor: docker_terraform
-    steps:
-      - checkout
-      - attach_workspace:
-          at: '.'
-      - run: *terraform_init
       - run:
           name: terraform | infra apply
           command: |
-            cd $HOME/repo/terraform/infra
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -132,7 +124,6 @@ jobs:
       - run:
           name: eks | manage kubectl config
           command: |
-            cd $HOME/repo/terraform/infra
             mkdir -p ~/.kube/
             terraform output kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
@@ -148,8 +139,9 @@ jobs:
           paths:
             - 'terraform/*'
 
-  install_apps:
+  install_ingress:
     executor: base
+    working_directory: '~/repo'
     steps:
       - checkout
       - attach_workspace:
@@ -182,7 +174,6 @@ executors:
     shell: /bin/sh -leo pipefail
     environment:
       - BASH_ENV: /etc/profile
-    working_directory: '~/repo'
 
   base:
     docker:
@@ -204,13 +195,6 @@ workflows:
           context: env-prod
           requires:
             - terraform_prepare
-          filters:
-            branches:
-              only: master
-      - terraform_plan:
-          context: env-prod
-          requires:
-            - terraform_validate
           filters:
             branches:
               only: master
@@ -249,13 +233,6 @@ workflows:
           context: env-staging
           requires:
             - terraform_prepare
-          filters:
-            branches:
-              ignore: master
-      - terraform_plan:
-          context: env-staging
-          requires:
-            - terraform_validate
           filters:
             branches:
               ignore: master
