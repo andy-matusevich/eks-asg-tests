@@ -216,7 +216,7 @@ workflows:
           filters:
             branches:
               only: master
-      - install_apps:
+      - install_ingress:
           context: env-prod
           requires:
             - terraform_apply
@@ -254,7 +254,7 @@ workflows:
           filters:
             branches:
               ignore: master
-      - install_apps:
+      - install_ingress:
           context: env-staging
           requires:
             - terraform_apply
