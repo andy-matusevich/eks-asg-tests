@@ -1,20 +1,12 @@
 provider "helm" {
   kubernetes {
-    config_path            = "~/.kube/config"
-    host                   = data.aws_eks_cluster.default.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.default.certificate_authority.0.data)
-    token                  = data.aws_eks_cluster_auth.default.token
+    host                   = data.aws_eks_cluster.cluster.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
 
-data "aws_eks_cluster" "default" {
-  name = var.cluster_name
-}
-
-data "aws_eks_cluster_auth" "default" {
-  name = var.cluster_name
-}
-
+### nginx-ingress
 resource "helm_release" "nginx-ingress" {
   name  = "nginx"
   chart = "nginx-stable/nginx-ingress"
@@ -25,7 +17,25 @@ resource "helm_release" "nginx-ingress" {
 
 
   set {
-    name  = "controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-type"
+    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
     value = "nlb"
   }
+
+  set {
+    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-backend-protocol"
+    value = "tcp"
+  }
+
+  set {
+    type  = "string"
+    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-connection-idle-timeout"
+    value = "60"
+  }
+
+  set {
+    type  = "string"
+    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-cross-zone-load-balancing-enabled"
+    value = "true"
+  }
+
 }
