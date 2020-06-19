@@ -6,7 +6,11 @@ provider "kubernetes" {
   version                = "~> 1.11"
 }
 
-variable "eks_instance_type" {
+variable "eks_instance_type_monitoring" {
+  default = "t2.micro"
+}
+
+variable "eks_instance_type_applications" {
   default = "t2.micro"
 }
 
@@ -30,14 +34,14 @@ module "eks" {
   worker_groups = [
     {
       name                          = "monitoring-group"
-      instance_type                 = var.eks_instance_type
+      instance_type                 = var.eks_instance_type_monitoring
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
       kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=monitoring"
     },
     {
       name                          = "applications-group"
-      instance_type                 = var.eks_instance_type
+      instance_type                 = var.eks_instance_type_applications
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
       kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=applications"

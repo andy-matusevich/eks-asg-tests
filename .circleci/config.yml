@@ -125,7 +125,7 @@ jobs:
               -auto-approve \
               -lock=true \
               -input=false \
-              -lock-timeout=120s \
+              -lock-timeout=30s \
               -refresh=true \
               .terraform/terraform.tfplan
       - kubernetes/install
