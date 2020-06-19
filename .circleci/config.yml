@@ -19,13 +19,14 @@ jobs:
     steps:
       - checkout
       - run:
-          command: cd terraform/pre
-      - run:
           name: terraform | pre init
-          command: terraform init
+          command: |
+            cd terraform/pre
+            terraform init
       - run:
           name: terraform | check s3/dynamodb status
           command: |
+            cd terraform/pre
             ### install awscli
             pwd && apk add --no-cache --virtual .build-deps g++ python3-dev libffi-dev openssl-dev curl sudo && \
             echo "Set disable_coredump false" >> /etc/sudo.conf && \
@@ -45,6 +46,7 @@ jobs:
       - run:
           name: terraform | apply tf state s3 bucket
           command: |
+            cd terraform/pre
             if [ $(cat .terraform/s3.status) != 0 ]; then
               terraform apply \
                 -auto-approve \
@@ -62,6 +64,7 @@ jobs:
       - run:
           name: terraform | apply lock dynamodb table
           command: |
+            cd terraform/pre
             if [ $(cat .terraform/lock-table.status) != 0 ]; then
               terraform apply \
                 -auto-approve \
