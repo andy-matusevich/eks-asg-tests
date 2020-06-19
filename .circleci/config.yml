@@ -151,12 +151,14 @@ jobs:
           command: |
             wget -O - http://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       - run:
-          name: install nginx
+          name: install nginx-ingress (nlb)
           command: |
-            helm repo add bitnami https://charts.bitnami.com/bitnami
+            helm repo add nginx-stable https://helm.nginx.com/stable
             helm repo update
-            kubectl create namespace nginx
-            helm install nginx bitnami/nginx --namespace nginx
+            helm install nginx nginx-stable/nginx-ingress \
+            	--namespace ingress \
+            	--create-namespace \
+            	--set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"=nlb
 
 
 orbs:
