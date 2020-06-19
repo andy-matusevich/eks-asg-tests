@@ -178,13 +178,6 @@ workflows:
           filters:
             branches:
               only: master
-      - install_ingress:
-          context: env-prod
-          requires:
-            - terraform_apply
-          filters:
-            branches:
-              only: master
 
   eks-staging:
     jobs:
@@ -207,11 +200,3 @@ workflows:
           filters:
             branches:
               ignore: master
-      - install_ingress:
-          context: env-staging
-          requires:
-            - terraform_apply
-          filters:
-            branches:
-              ignore: master
-
