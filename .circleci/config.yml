@@ -91,6 +91,11 @@ jobs:
             cd terraform/aws_infra
             terraform validate
       - run:
+          name: aws infra | make kubeconfig
+          command: |
+            mkdir -p ~/.kube/
+            terraform output kubeconfig > ~/.kube/config 2>/dev/null || echo -e "kubeconfig var is not present"
+      - run:
           name: aws infra | plan
           command: |
             cd terraform/aws_infra
