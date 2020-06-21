@@ -66,7 +66,7 @@ jobs:
           name: aws state | apply lock dynamodb table
           command: |
             cd terraform/aws_state
-            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks >/dev/null 2>&1 && \
+            aws dynamodb list-tables | jq ".TableNames[]" | grep ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks >/dev/null 2>&1 && \
             echo -e "DynamoDB table is already exists" || \
             terraform apply \
               -auto-approve \
@@ -91,11 +91,6 @@ jobs:
             cd terraform/aws_infra
             terraform validate
       - run:
-          name: aws infra | make kubeconfig
-          command: |
-            mkdir -p ~/.kube/
-            terraform output kubeconfig > ~/.kube/config 2>/dev/null || echo -e "kubeconfig var is not present"
-      - run:
           name: aws infra | plan
           command: |
             cd terraform/aws_infra
@@ -116,10 +111,15 @@ jobs:
               -lock-timeout=30s \
               -refresh=true \
               .terraform/aws_infra.tfplan
+      - run:
+          name: aws infra | make kubeconfig
+          command: |
+            mkdir -p ~/.kube/
+            terraform output kubeconfig > ~/.kube/config 2>/dev/null || echo -e "kubeconfig var is not present"
       - persist_to_workspace:
           root: '~/'
           paths:
-            - 'repo/eks-asg-tests/terraform/*'
+            - 'repo/terraform/*'
             - '.kube/*'
 
   aws_infra_apps:
