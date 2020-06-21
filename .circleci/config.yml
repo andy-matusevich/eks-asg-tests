@@ -32,6 +32,7 @@ jobs:
           command: |
             cd terraform/pre
             aws s3api get-bucket-location --bucket ${CIRCLE_PROJECT_REPONAME} > /dev/null 2>&1 && \
+            echo -e "S3 bucket is already exists" || \
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -41,13 +42,14 @@ jobs:
               -target=aws_s3_bucket.tfstate-storage-s3 \
               -var="state_region=${AWS_DEFAULT_REGION}" \
               -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tfstate-locks" || \
-            echo -e "S3 bucket is already exists"
+              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tfstate-locks"
+
       - run:
           name: terraform | apply lock dynamodb table
           command: |
             cd terraform/pre
             aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-locks > /dev/null 2>&1 && \
+            echo -e "DynamoDB table is already exists" || \
             terraform apply \
               -auto-approve \
               -lock=true \
@@ -57,8 +59,8 @@ jobs:
               -target=aws_dynamodb_table.tfstate-locks \
               -var="state_region=${AWS_DEFAULT_REGION}" \
               -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tfstate-locks" || \
-            echo -e "DynamoDB table is already exists"
+              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tfstate-locks"
+
 
   terraform_validate:
     executor: docker_terraform
