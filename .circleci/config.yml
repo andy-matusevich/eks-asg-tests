@@ -48,7 +48,7 @@ jobs:
           name: terraform | apply lock dynamodb table
           command: |
             cd terraform/pre
-            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-locks > /dev/null 2>&1 && \
+            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tfstate-locks > /dev/null 2>&1 && \
             echo -e "DynamoDB table is already exists" || \
             terraform apply \
               -auto-approve \
@@ -89,6 +89,8 @@ jobs:
           name: terraform | infra plan
           command: |
             cd terraform/infra
+            mkdir -p ~/.kube/
+            terraform output kubeconfig > ~/.kube/config 2>/dev/null || echo -e "kubeconfig var is not present"
             terraform plan \
               -out=".terraform/terraform.tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
@@ -111,7 +113,6 @@ jobs:
           name: eks | manage kubectl config
           command: |
             cd terraform/infra
-            mkdir -p ~/.kube/
             terraform output kubeconfig > ~/.kube/config
       - aws-eks/install-eksctl
       - aws-eks/update-kubeconfig-with-authenticator:
