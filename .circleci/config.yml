@@ -6,8 +6,6 @@ executors:
     docker:
       - image: 'hashicorp/terraform:0.12.25'
     resource_class: 'small'
-    environment:
-      STATE_LOCK_TABLE: ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks
     shell: /bin/sh -leo pipefail
 
 orbs:
@@ -63,12 +61,12 @@ jobs:
               -target=aws_s3_bucket.tfstate-storage-s3 \
               -var="state_region=${AWS_DEFAULT_REGION}" \
               -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-              -var="state_lock_table=${STATE_LOCK_TABLE}"
+              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks"
       - run:
           name: aws state | apply lock dynamodb table
           command: |
             cd terraform/aws_state
-            aws dynamodb describe-table --table-name ${STATE_LOCK_TABLE}  >/dev/null 2>&1 && \
+            aws dynamodb describe-table --table-name ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks >/dev/null 2>&1 && \
             echo -e "DynamoDB table is already exists" || \
             terraform apply \
               -auto-approve \
@@ -79,7 +77,7 @@ jobs:
               -target=aws_dynamodb_table.tfstate-locks \
               -var="state_region=${AWS_REGION}" \
               -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-              -var="state_lock_table=${STATE_LOCK_TABLE}"
+              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks"
 
   aws_infra:
     executor: docker_terraform
