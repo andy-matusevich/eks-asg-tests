@@ -126,7 +126,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: '.'
-      - command: mv -f .kube/ ~/
+      - run:
+          name: eks | .kube dir
+          command: mv -f .kube/ ~/
       - run: *aws_infra_apps_init
       - run:
           name: eks | install aws cli
