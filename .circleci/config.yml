@@ -61,7 +61,7 @@ jobs:
               -lock-timeout=30s \
               -refresh=true \
               -target=aws_s3_bucket.tfstate-storage-s3 \
-              -var="state_region=${AWS_REGION}" \
+              -var="state_region=${AWS_DEFAULT_REGION}" \
               -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
               -var="state_lock_table=${STATE_LOCK_TABLE}"
       - run:
