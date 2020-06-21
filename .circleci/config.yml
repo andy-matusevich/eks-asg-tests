@@ -79,7 +79,7 @@ jobs:
               -target=aws_dynamodb_table.tfstate-locks \
               -var="state_region=${AWS_REGION}" \
               -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
-              -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks"
+              -var="state_lock_table=${STATE_LOCK_TABLE}"
 
   aws_infra:
     executor: docker_terraform
@@ -114,10 +114,10 @@ jobs:
               -refresh=true \
               .terraform/aws_infra.tfplan
       - persist_to_workspace:
-          root: './'
+          root: '~/'
           paths:
-            - 'terraform/*'
-            - '../.kube/*'
+            - 'repo/eks-asg-tests/terraform/*'
+            - '.kube/*'
 
   aws_infra_apps:
     executor: docker_terraform
@@ -126,6 +126,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: '.'
+      - command: mv -f .kube/ ~/
       - run: *aws_infra_apps_init
       - run:
           name: eks | install aws cli
