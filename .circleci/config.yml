@@ -143,6 +143,7 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           aws-region: "${AWS_REGION}"
           cluster-name: "${CIRCLE_PROJECT_REPONAME}"
+      - run: *aws_infra_apps_init
       - run:
           name: aws infra | plan
           command: |
