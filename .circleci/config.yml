@@ -66,7 +66,9 @@ jobs:
           name: aws state | apply lock dynamodb table
           command: |
             cd terraform/aws_state
-            aws dynamodb list-tables | jq ".TableNames[]" | grep ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks >/dev/null 2>&1 && \
+            aws dynamodb list-tables --region ${AWS_REGION} | \
+            jq ".TableNames[]" | \
+            grep ${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks >/dev/null 2>&1 && \
             echo -e "DynamoDB table is already exists" || \
             terraform apply \
               -auto-approve \
