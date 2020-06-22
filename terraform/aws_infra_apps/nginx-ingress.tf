@@ -1,24 +1,3 @@
-# https://www.terraform.io/docs/providers/helm/index.html
-provider "helm" {
-  kubernetes {
-    host                   = data.aws_eks_cluster.cluster.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-    token                  = data.aws_eks_cluster_auth.cluster.token
-  }
-}
-
-variable "cluster_name" {}
-variable "environment" {}
-variable "region" {}
-
-data "aws_eks_cluster" "cluster" {
-  name = var.cluster_name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = data.aws_eks_cluster.cluster.name
-}
-
 ### nginx-ingress
 # https://www.terraform.io/docs/providers/helm/r/release.html
 resource "helm_release" "nginx-ingress" {
@@ -29,6 +8,7 @@ resource "helm_release" "nginx-ingress" {
   replace          = "true"
   create_namespace = "true"
   atomic           = "true"
+  lint             = "true"
 
   set {
     name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
@@ -59,16 +39,4 @@ resource "helm_release" "nginx-ingress" {
     value = "true"
   }
 
-}
-
-output "cluster_name" {
-  value = data.aws_eks_cluster.cluster.name
-}
-
-output "vpc_id" {
-  value = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-}
-
-output "subnet_ids" {
-  value = data.aws_eks_cluster.cluster.vpc_config[0].subnet_ids
 }
