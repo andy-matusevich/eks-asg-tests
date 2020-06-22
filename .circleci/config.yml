@@ -18,7 +18,7 @@ aliases:
     command: |
       cd terraform/aws_infra
       terraform init \
-        -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/aws_inra.tfstate" \
+        -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/$(basename ${PWD}).tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
   - &aws_infra_apps_init
@@ -26,7 +26,7 @@ aliases:
     command: |
       cd terraform/aws_infra
       terraform init \
-        -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/aws_infra_apps.tfstate" \
+        -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/$(basename ${PWD}).tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
 
@@ -97,7 +97,7 @@ jobs:
           command: |
             cd terraform/aws_infra
             terraform plan \
-              -out=".terraform/aws_infra.tfplan" \
+              -out=".terraform/$(basename ${PWD}).tfplan" \
               -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
               -var="environment=${CI_ENVIRONMENT}" \
               -var="region=${AWS_REGION}" \
@@ -112,7 +112,7 @@ jobs:
               -input=false \
               -lock-timeout=30s \
               -refresh=true \
-              .terraform/aws_infra.tfplan
+              .terraform/$(basename ${PWD}).tfplan
       - run:
           name: aws infra | make kubeconfig
           command: |
@@ -149,7 +149,7 @@ jobs:
           command: |
             cd terraform/aws_infra_apps
             terraform plan \
-            -out=".terraform/aws_infra_apps.tfplan" \
+            -out=".terraform/$(basename ${PWD}).tfplan" \
             -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
             -var="environment=${CI_ENVIRONMENT}" \
             -var="region=${AWS_REGION}" \
@@ -164,7 +164,7 @@ jobs:
               -input=false \
               -lock-timeout=30s \
               -refresh=true \
-              .terraform/aws_infra_apps.tfplan
+              .terraform/$(basename ${PWD}).tfplan
 
 
 workflows:
