@@ -13,8 +13,9 @@ orbs:
   kubernetes: circleci/kubernetes@0.11.0
 
 aliases:
+  # circleci steps
   - &aws_infra_init
-    name: aws | infra init
+    name: aws infra | init
     command: |
       cd terraform/aws_infra
       terraform init \
@@ -22,13 +23,22 @@ aliases:
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
   - &aws_infra_apps_init
-    name: aws | infra apps init
+    name: aws infra apps | init
     command: |
-      cd terraform/aws_infra
+      cd terraform/aws_infra_apps
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/$(basename ${PWD}).tfstate" \
         -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
+  # git branches filters
+  - &except_master_branch
+    filters:
+      branches:
+        ignore: master
+  - &only_master_branch
+    filters:
+      branches:
+        only: master
 
 
 jobs:
@@ -132,11 +142,10 @@ jobs:
       - attach_workspace:
           at: '.'
       - run:
-          name: eks | .kube dir
+          name: aws infra apps | .kube dir
           command: mv -f .kube/ ~/
-      - run: *aws_infra_apps_init
       - run:
-          name: eks | install aws cli
+          name: aws infra apps | install aws cli
           command: sh .circleci/aws-cli-install.sh
       - kubernetes/install
       - aws-eks/install-eksctl
@@ -145,17 +154,16 @@ jobs:
           cluster-name: "${CIRCLE_PROJECT_REPONAME}"
       - run: *aws_infra_apps_init
       - run:
-          name: aws | plan
+          name: aws infra apps | plan
           command: |
             cd terraform/aws_infra_apps
             terraform plan \
             -out=".terraform/$(basename ${PWD}).tfplan" \
             -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
             -var="environment=${CI_ENVIRONMENT}" \
-            -var="region=${AWS_REGION}" \
-            -var-file=${CI_ENVIRONMENT}.tfvars
+            -var="region=${AWS_REGION}"
       - run:
-          name: aws | apply
+          name: aws infra apps | apply
           command: |
             cd terraform/aws_infra_apps
             terraform apply \
@@ -172,49 +180,35 @@ workflows:
     jobs:
       - aws_state:
           context: env-prod
-          filters:
-            branches:
-              only: master
+          <<: *only_master_branch
       - approve_prod:
           type: approval
+          <<: *only_master_branch
           requires:
             - aws_state
-          filters:
-            branches:
-              only: master
       - aws_infra:
           context: env-prod
+          <<: *only_master_branch
           requires:
             - approve_prod
-          filters:
-            branches:
-              only: master
       - aws_infra_apps:
           context: env-prod
+          <<: *only_master_branch
           requires:
             - aws_infra
-          filters:
-            branches:
-              only: master
 
   eks-staging:
     jobs:
       - aws_state:
           context: env-staging
-          filters:
-            branches:
-              ignore: master
+          <<: *except_master_branch
       - aws_infra:
           context: env-staging
+          <<: *except_master_branch
           requires:
             - aws_state
-          filters:
-            branches:
-              ignore: master
       - aws_infra_apps:
           context: env-staging
+          <<: *except_master_branch
           requires:
             - aws_infra
-          filters:
-            branches:
-              ignore: master
