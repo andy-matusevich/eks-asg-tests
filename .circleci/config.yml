@@ -145,7 +145,7 @@ jobs:
           cluster-name: "${CIRCLE_PROJECT_REPONAME}"
       - run: *aws_infra_apps_init
       - run:
-          name: aws infra | plan
+          name: aws | plan
           command: |
             cd terraform/aws_infra_apps
             terraform plan \
@@ -155,7 +155,7 @@ jobs:
             -var="region=${AWS_REGION}" \
             -var-file=${CI_ENVIRONMENT}.tfvars
       - run:
-          name: aws infra | apply
+          name: aws | apply
           command: |
             cd terraform/aws_infra_apps
             terraform apply \

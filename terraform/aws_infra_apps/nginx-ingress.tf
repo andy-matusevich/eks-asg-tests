@@ -7,6 +7,32 @@ provider "helm" {
   }
 }
 
+module "eks" {
+  #source       = "../aws_infra/.terraform/modules/eks"
+  source = "terraform-aws-modules/eks/aws"
+  subnets = data.aws_eks_cluster.cluster.vpc_config.subnet_ids
+  cluster_name = var.cluster_name
+  vpc_id = var.vpc_id
+}
+
+variable "cluster_name" {}
+variable "environment" {}
+variable "region" {}
+variable "vpc_id" {}
+
+data "aws_eks_cluster" "cluster" {
+  name = var.cluster_name
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_id
+}
+
+data "aws_vpc" "selected" {
+  id = data.aws_eks_cluster.cluster.vpc_config.vpc_id
+}
+
+
 ### nginx-ingress
 # https://www.terraform.io/docs/providers/helm/r/release.html
 resource "helm_release" "nginx-ingress" {
