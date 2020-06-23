@@ -55,25 +55,13 @@ resource "kubernetes_ingress" "ingress-nginx-controller" {
   depends_on = [kubernetes_config_map.ingress-nginx-controller]
   metadata {
     name      = "ingress-nginx-controller"
-    namespace = "ingress"
+    namespace = "monitoring"
   }
 
   spec {
     backend {
       service_name = "grafana"
-      service_port = 80
-    }
-
-    rule {
-      http {
-        path {
-          backend {
-            service_name = "grafana"
-            service_port = 80
-          }
-          path = "/grafana"
-        }
-      }
+      service_port = 3000
     }
   }
 }
