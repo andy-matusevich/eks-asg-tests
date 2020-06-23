@@ -5,8 +5,9 @@
 eks-asg-tests/
 ├── .circleci
 └── terraform
-    ├── infra
-    └── pre
+    ├── aws_state       # (1) create s3/dynamodb state bucket/table
+    ├── aws_infra       # (2) create aws project inrastructure
+    └── aws_infra_apps  # (3) create ingress controller and monitoring apps
 ```
 ---
 
@@ -28,9 +29,9 @@ eks-asg-tests/
 ---
 #### Terraform
 
-* [Versions](terraform\infra\versions.tf)
-* [Production vars](terraform\infra\production.tfvars)
-* [Staging vars](terraform\infra\production.tfvars)
+* [Versions](terraform\aws_infra\versions.tf)
+* [Production vars](terraform\aws_infra\production.tfvars)
+* [Staging vars](terraform\aws_infra\production.tfvars)
 
 
 ###### [Managing TF state](https://blog.gruntwork.io/how-to-manage-terraform-state-28f5697e68fa)

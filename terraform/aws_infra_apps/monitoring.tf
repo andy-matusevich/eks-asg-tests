@@ -1,7 +1,7 @@
 resource "helm_release" "prometheus" {
   name             = "prometheus"
-  chart            = "stable/prometheus"
-  version          = "11.6.0"
+  chart            = "prometheus"
+#  version          = "11.6.0"
   repository       = "https://kubernetes-charts.storage.googleapis.com/"
   namespace        = "monitoring"
   replace          = "false"
@@ -21,8 +21,8 @@ resource "helm_release" "prometheus" {
 
 resource "helm_release" "grafana" {
   name             = "grafana"
-  chart            = "stable/grafana"
-  version          = "5.2.1"
+  chart            = "grafana"
+#  version          = "5.2.1"
   repository       = "https://kubernetes-charts.storage.googleapis.com/"
   namespace        = "monitoring"
   replace          = "false"
@@ -43,7 +43,7 @@ resource "helm_release" "grafana" {
 
   set {
     name  = "adminPassword"
-    value = random_string.random
+    value = random_string.random.result
   }
 }
 
