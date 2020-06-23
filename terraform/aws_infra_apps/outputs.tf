@@ -10,8 +10,8 @@ output "subnet_ids" {
   value = data.aws_eks_cluster.cluster.vpc_config[0].subnet_ids
 }
 
-output "nginx-ingress" {
-  value = helm_release.nginx-ingress
+output "ingress-nginx-controller" {
+  value = helm_release.ingress-nginx-controller
 }
 
 output "prometheus" {
