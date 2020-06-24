@@ -21,7 +21,3 @@ output "prometheus" {
 output "grafana" {
   value = helm_release.grafana
 }
-
-output "password" {
-  value = random_string.random
-}

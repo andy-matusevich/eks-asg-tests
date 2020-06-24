@@ -19,7 +19,40 @@ resource "helm_release" "prometheus" {
   }
 }
 
+resource "kubernetes_ingress" "prometheus" {
+  depends_on = [helm_release.prometheus, helm_release.ingress-nginx-controller]
+    spec {
+    backend {
+      service_name = "prometheus-server"
+      service_port = "9090"
+    }
+    rule {
+      host = data.aws_lb.ingress-nginx-controller.dns_name
+      http {
+        path {
+          backend {
+            service_name = "prometheus-server"
+            service_port = "9090"
+          }
+          path = "/"
+        }
+      }
+    }
+  }
+  metadata {
+    name = "ingress-prometheus"
+    namespace = "monitoring"
+  }
+}
+
+resource "random_string" "random" {
+  length           = 16
+  special          = true
+  override_special = "#$^&*"
+}
+
 resource "helm_release" "grafana" {
+  depends_on       = [helm_release.prometheus]
   name             = "grafana"
   chart            = "grafana"
 #  version          = "5.2.1"
@@ -28,8 +61,8 @@ resource "helm_release" "grafana" {
   replace          = "false"
   create_namespace = "true"
   lint             = "true"
-  values           = ["${file("manifests/grafana.yaml")}"]
-  depends_on       = [helm_release.prometheus]
+  values           = ["${file("grafana/values.yaml")}"]
+
 
   set {
     name  = "persistence\\.storageClassName"
@@ -45,10 +78,37 @@ resource "helm_release" "grafana" {
     name  = "adminPassword"
     value = random_string.random.result
   }
+
+  set {
+    name = "grafana\\.ini.server.domain"
+    value = data.aws_lb.ingress-nginx-controller.dns_name
+  }
 }
 
-resource "random_string" "random" {
-  length           = 16
-  special          = true
-  override_special = "#$^&*"
+resource "kubernetes_ingress" "grafana" {
+  depends_on       = [helm_release.grafana, helm_release.ingress-nginx-controller, kubernetes_ingress.grafana]
+
+  spec {
+    backend {
+      service_name = "grafana"
+      service_port = "3000"
+    }
+    rule {
+      host = data.aws_lb.ingress-nginx-controller.dns_name
+      http {
+        path {
+          backend {
+            service_name = "grafana"
+            service_port = "3000"
+          }
+          path = "/grafana(/|$)(.*)"
+        }
+      }
+    }
+  }
+  metadata {
+    name = "ingress-grafana"
+    namespace = "monitoring"
+    annotations.nginx\\.ingress\\.kubernetes\\.io/rewrite-target = "/$2"
+  }
 }
