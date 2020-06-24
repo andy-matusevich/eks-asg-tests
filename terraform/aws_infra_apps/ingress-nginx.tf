@@ -38,6 +38,7 @@ resource "helm_release" "ingress-nginx-controller" {
 # https://www.terraform.io/docs/providers/kubernetes/r/config_map.html
 resource "kubernetes_config_map" "ingress-nginx-controller" {
   depends_on = [helm_release.ingress-nginx-controller]
+
   metadata {
     name      = helm_release.ingress-nginx-controller.name
     namespace = helm_release.ingress-nginx-controller.namespace
@@ -47,6 +48,8 @@ resource "kubernetes_config_map" "ingress-nginx-controller" {
 
 # https://www.terraform.io/docs/providers/aws/d/lb.html
 data "aws_lb" "ingress-nginx-controller" {
+  depends_on = [helm_release.ingress-nginx-controller]
+
   tags = {
     "kubernetes.io/service-name" = "ingress/nginx-ingress-nginx-controller"
   }

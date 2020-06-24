@@ -1,7 +1,7 @@
 resource "helm_release" "prometheus" {
   name             = "prometheus"
   chart            = "prometheus"
-#  version          = "11.6.0"
+  version          = "11.6.0"
   repository       = "https://kubernetes-charts.storage.googleapis.com/"
   namespace        = "monitoring"
   replace          = "false"
@@ -21,13 +21,14 @@ resource "helm_release" "prometheus" {
 
 resource "kubernetes_ingress" "prometheus" {
   depends_on = [helm_release.prometheus, helm_release.ingress-nginx-controller]
+  wait_for_load_balancer = "true"
+
     spec {
     backend {
       service_name = "prometheus-server"
       service_port = "9090"
     }
     rule {
-      host = data.aws_lb.ingress-nginx-controller.dns_name
       http {
         path {
           backend {
@@ -52,10 +53,10 @@ resource "random_string" "random" {
 }
 
 resource "helm_release" "grafana" {
-  depends_on       = [helm_release.prometheus]
+  depends_on       = [kubernetes_ingress.prometheus]
   name             = "grafana"
   chart            = "grafana"
-#  version          = "5.2.1"
+  version          = "5.2.1"
   repository       = "https://kubernetes-charts.storage.googleapis.com/"
   namespace        = "monitoring"
   replace          = "false"
@@ -79,14 +80,11 @@ resource "helm_release" "grafana" {
     value = random_string.random.result
   }
 
-  set {
-    name = "grafana\\.ini.server.domain"
-    value = data.aws_lb.ingress-nginx-controller.dns_name
-  }
 }
 
 resource "kubernetes_ingress" "grafana" {
-  depends_on       = [helm_release.grafana, helm_release.ingress-nginx-controller, kubernetes_ingress.grafana]
+  depends_on       = [helm_release.grafana]
+  wait_for_load_balancer = "true"
 
   spec {
     backend {
@@ -94,7 +92,6 @@ resource "kubernetes_ingress" "grafana" {
       service_port = "3000"
     }
     rule {
-      host = data.aws_lb.ingress-nginx-controller.dns_name
       http {
         path {
           backend {
@@ -109,6 +106,9 @@ resource "kubernetes_ingress" "grafana" {
   metadata {
     name = "ingress-grafana"
     namespace = "monitoring"
-    annotations.nginx\\.ingress\\.kubernetes\\.io/rewrite-target = "/$2"
+    annotations = {
+      nginx.ingress.kubernetes.io/rewrite-target = "/$2"
+    }
+
   }
 }
