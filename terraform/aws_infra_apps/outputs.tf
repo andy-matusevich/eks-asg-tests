@@ -14,10 +14,18 @@ output "ingress-nginx-controller" {
   value = helm_release.ingress-nginx-controller
 }
 
-output "prometheus" {
-  value = helm_release.prometheus_release
+output "prometheus_status" {
+  value = helm_release.prometheus_release.status
 }
 
-output "grafana" {
-  value = helm_release.grafana_release
+output "grafana_status" {
+  value = helm_release.grafana_release.status
+}
+
+locals {
+  lb_dns = data.aws_lb.ingress-nginx-controller.dns_name
+}
+
+output "grafana_url" {
+  value = "http://${local.lb_dns}/grafana"
 }
