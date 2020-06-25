@@ -1,4 +1,4 @@
-resource "helm_release" "prometheus" {
+resource "helm_release" "prometheus_release" {
   depends_on       = [helm_release.ingress-nginx-controller]
   name             = "prometheus"
   chart            = "prometheus"
@@ -21,7 +21,7 @@ resource "helm_release" "prometheus" {
 }
 
 resource "kubernetes_ingress" "prometheus" {
-  depends_on = [helm_release.prometheus]
+  depends_on = [helm_release.prometheus_release]
 
   spec {
     backend {
@@ -52,7 +52,7 @@ resource "random_string" "random" {
   override_special = "#$^&*"
 }
 
-resource "helm_release" "grafana" {
+resource "helm_release" "grafana_release" {
   depends_on       = [kubernetes_ingress.prometheus]
   name             = "grafana"
   chart            = "grafana"
@@ -62,8 +62,7 @@ resource "helm_release" "grafana" {
   replace          = "false"
   create_namespace = "true"
   lint             = "true"
-  values           = ["${file("grafana/values.yaml")}"]
-
+  values           = ["${file("values/grafana.yaml")}"]
 
   set {
     name  = "persistence\\.storageClassName"
@@ -79,12 +78,10 @@ resource "helm_release" "grafana" {
     name  = "adminPassword"
     value = random_string.random.result
   }
-
-
 }
 
 resource "kubernetes_ingress" "grafana" {
-  depends_on             = [helm_release.grafana]
+  depends_on             = [helm_release.grafana_release]
 #  wait_for_load_balancer = "true"
 
   spec {
@@ -108,8 +105,7 @@ resource "kubernetes_ingress" "grafana" {
     name        = "ingress-grafana"
     namespace   = "monitoring"
     annotations = {
-      rewrite-target = "/$2"
+      "nginx.ingress.kubernetes.io/rewrite-target" = "/$2"
     }
-
   }
 }

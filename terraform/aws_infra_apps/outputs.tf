@@ -15,9 +15,9 @@ output "ingress-nginx-controller" {
 }
 
 output "prometheus" {
-  value = helm_release.prometheus
+  value = helm_release.prometheus_release
 }
 
 output "grafana" {
-  value = helm_release.grafana
+  value = helm_release.grafana_release
 }
