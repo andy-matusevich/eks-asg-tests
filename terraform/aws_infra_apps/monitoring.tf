@@ -1,4 +1,5 @@
 resource "helm_release" "prometheus" {
+  depends_on       = [helm_release.ingress-nginx-controller]
   name             = "prometheus"
   chart            = "prometheus"
   version          = "11.6.0"
@@ -20,10 +21,9 @@ resource "helm_release" "prometheus" {
 }
 
 resource "kubernetes_ingress" "prometheus" {
-  depends_on = [helm_release.prometheus, helm_release.ingress-nginx-controller]
-  wait_for_load_balancer = "true"
+  depends_on = [helm_release.prometheus]
 
-    spec {
+  spec {
     backend {
       service_name = "prometheus-server"
       service_port = "9090"
@@ -41,7 +41,7 @@ resource "kubernetes_ingress" "prometheus" {
     }
   }
   metadata {
-    name = "ingress-prometheus"
+    name      = "ingress-prometheus"
     namespace = "monitoring"
   }
 }
@@ -80,11 +80,12 @@ resource "helm_release" "grafana" {
     value = random_string.random.result
   }
 
+
 }
 
 resource "kubernetes_ingress" "grafana" {
-  depends_on       = [helm_release.grafana]
-  wait_for_load_balancer = "true"
+  depends_on             = [helm_release.grafana]
+#  wait_for_load_balancer = "true"
 
   spec {
     backend {
@@ -104,10 +105,10 @@ resource "kubernetes_ingress" "grafana" {
     }
   }
   metadata {
-    name = "ingress-grafana"
-    namespace = "monitoring"
+    name        = "ingress-grafana"
+    namespace   = "monitoring"
     annotations = {
-      nginx.ingress.kubernetes.io/rewrite-target = "/$2"
+      rewrite-target = "/$2"
     }
 
   }
