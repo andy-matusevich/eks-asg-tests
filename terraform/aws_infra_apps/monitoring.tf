@@ -82,7 +82,6 @@ resource "helm_release" "grafana_release" {
 
 resource "kubernetes_ingress" "grafana" {
   depends_on             = [helm_release.grafana_release]
-#  wait_for_load_balancer = "true"
 
   spec {
     backend {
