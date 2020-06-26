@@ -23,10 +23,14 @@ output "cluster_name" {
   value = var.cluster_name
 }
 
-output "ecr_url" {
-  value = data.aws_ecr_repository.ecr.repository_url
-}
-
 output "ecr_registry_id" {
   value = data.aws_ecr_repository.ecr.registry_id
+}
+
+output "ecr_registry_url" {
+  value = "${data.aws_ecr_repository.ecr.registry_id}.dkr.ecr.${var.region}.amazonaws.com"
+}
+
+output "ecr_registry_token" {
+  value = data.aws_ecr_authorization_token.token
 }

@@ -22,10 +22,3 @@ output "grafana_status" {
   value = helm_release.grafana_release.status
 }
 
-locals {
-  lb_dns = data.aws_lb.ingress-nginx-controller.dns_name
-}
-
-output "grafana_url" {
-  value = "http://${local.lb_dns}/grafana"
-}
