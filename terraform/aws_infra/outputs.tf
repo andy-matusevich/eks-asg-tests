@@ -13,11 +13,6 @@ output "kubeconfig" {
   value = module.eks.kubeconfig
 }
 
-#output "config_map_aws_auth" {
-#  description = "A kubernetes configuration to authenticate to this EKS cluster."
-#  value = module.eks.config_map_aws_auth
-#}
-
 output "region" {
   description = "AWS region"
   value = var.region
@@ -26,4 +21,12 @@ output "region" {
 output "cluster_name" {
   description = "Kubernetes Cluster Name"
   value = var.cluster_name
+}
+
+output "ecr_url" {
+  value = data.aws_ecr_repository.ecr.repository_url
+}
+
+output "ecr_registry_id" {
+  value = data.aws_ecr_repository.ecr.registry_id
 }
