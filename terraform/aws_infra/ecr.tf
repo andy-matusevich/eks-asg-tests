@@ -13,4 +13,5 @@ data "aws_ecr_repository" "ecr" {
 }
 
 data "aws_ecr_authorization_token" "token" {
+  registry_id = data.aws_ecr_repository.ecr.registry_id
 }
