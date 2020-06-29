@@ -27,10 +27,12 @@ output "ecr_registry_id" {
 }
 
 output "ecr_registry_url" {
+  depends_on = [data.aws_ecr_repository.ecr]
   value = "${data.aws_ecr_repository.ecr.registry_id}.dkr.ecr.${var.region}.amazonaws.com"
 }
 
 output "ecr_registry_token" {
+  depends_on = [data.aws_ecr_repository.ecr]
   value = data.aws_ecr_authorization_token.token
   sensitive = "true"
 }
