@@ -32,4 +32,5 @@ output "ecr_registry_url" {
 
 output "ecr_registry_token" {
   value = data.aws_ecr_authorization_token.token
+  sensitive = "true"
 }
