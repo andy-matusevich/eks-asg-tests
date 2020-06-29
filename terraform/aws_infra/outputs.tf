@@ -30,7 +30,6 @@ output "ecr_registry_url" {
   value = data.aws_ecr_repository.ecr.repository_url
 }
 
-output "ecr_token" {
-  value     = data.aws_ecr_authorization_token.token
-  sensitive = "true"
+output "ecr_repository_name" {
+  value = data.aws_ecr_repository.ecr.name
 }
