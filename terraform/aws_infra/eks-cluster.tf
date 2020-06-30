@@ -35,7 +35,7 @@ module "eks" {
     {
       name                          = "monitoring-group"
       instance_type                 = var.eks_instance_type_monitoring
-      asg_desired_capacity          = 1
+      asg_desired_capacity          = 2
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
       kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=monitoring"
     },

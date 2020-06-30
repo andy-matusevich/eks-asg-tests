@@ -46,6 +46,19 @@ resource "kubernetes_ingress" "prometheus" {
   }
 }
 
+resource "helm_release" "loki_release" {
+  depends_on       = [helm_release.ingress-nginx-controller]
+  name             = "loki"
+  chart            = "loki-stack"
+  version          = "1.5.0"
+  repository       = "https://grafana.github.io/loki/charts"
+  namespace        = "monitoring"
+  replace          = "false"
+  create_namespace = "true"
+  lint             = "true"
+
+}
+
 resource "random_string" "random" {
   length           = 16
   special          = true
@@ -53,7 +66,7 @@ resource "random_string" "random" {
 }
 
 resource "helm_release" "grafana_release" {
-  depends_on       = [kubernetes_ingress.prometheus]
+  depends_on       = [helm_release.prometheus_release, helm_release.loki_release]
   name             = "grafana"
   chart            = "grafana"
   version          = "5.2.1"
@@ -63,6 +76,7 @@ resource "helm_release" "grafana_release" {
   create_namespace = "true"
   lint             = "true"
   values           = ["${file("values/grafana.yaml")}"]
+
 
   set {
     name  = "persistence\\.storageClassName"
@@ -108,3 +122,4 @@ resource "kubernetes_ingress" "grafana" {
     }
   }
 }
+
