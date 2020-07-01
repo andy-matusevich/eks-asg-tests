@@ -22,13 +22,16 @@ output "cluster_name" {
 }
 
 output "ecr_registry_id" {
+  depends_on = [data.aws_ecr_repository.ecr]
   value = data.aws_ecr_repository.ecr.registry_id
 }
 
 output "ecr_registry_url" {
+  depends_on = [data.aws_ecr_repository.ecr]
   value = data.aws_ecr_repository.ecr.repository_url
 }
 
 output "ecr_repository_name" {
+  depends_on = [data.aws_ecr_repository.ecr]
   value = data.aws_ecr_repository.ecr.name
 }
