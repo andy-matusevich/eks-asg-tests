@@ -33,6 +33,18 @@ resource "helm_release" "ingress-nginx-controller" {
     value = "true"
   }
 
+  set {
+    type = "string"
+    name  = "controller.service.annotations.prometheus\\.io/scrape"
+    value = "true"
+  }
+
+  set {
+    type = "string"
+    name  = "controller.service.annotations.prometheus\\.io/port"
+    value = "9102"
+  }
+
 }
 
 # https://www.terraform.io/docs/providers/kubernetes/r/config_map.html
