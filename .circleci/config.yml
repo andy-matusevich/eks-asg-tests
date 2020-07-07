@@ -121,9 +121,8 @@ jobs:
               -lock=true \
               -input=false \
               -lock-timeout=30s \
-              -refresh=true \
               .terraform/$(basename ${PWD}).tfplan
-            terraform refresh
+            terraform output
       - run:
           name: aws infra | make kubeconfig
           command: |
@@ -172,7 +171,6 @@ jobs:
               -lock=true \
               -input=false \
               -lock-timeout=30s \
-              -refresh=true \
               .terraform/$(basename ${PWD}).tfplan
 
 
