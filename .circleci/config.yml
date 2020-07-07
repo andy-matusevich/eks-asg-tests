@@ -123,6 +123,7 @@ jobs:
               -lock-timeout=30s \
               -refresh=true \
               .terraform/$(basename ${PWD}).tfplan
+            terraform refresh
       - run:
           name: aws infra | make kubeconfig
           command: |
