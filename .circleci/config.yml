@@ -122,7 +122,14 @@ jobs:
               -input=false \
               -lock-timeout=30s \
               .terraform/$(basename ${PWD}).tfplan
-            terraform output
+      - run:
+          name: aws infra | refresh outputs
+          command: |
+            cd terraform/aws_infra
+            terraform refresh \
+              -var="cluster_name=${CIRCLE_PROJECT_REPONAME}" \
+              -var="environment=${CI_ENVIRONMENT}" \
+              -var="region=${AWS_REGION}"
       - run:
           name: aws infra | make kubeconfig
           command: |

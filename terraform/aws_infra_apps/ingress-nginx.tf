@@ -8,8 +8,7 @@ resource "helm_release" "ingress-nginx-controller" {
   replace          = "true"
   create_namespace = "true"
   atomic           = "true"
-  lint             = "true"
-
+  recreate_pods    = "true"
 
   set {
     name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
@@ -34,15 +33,21 @@ resource "helm_release" "ingress-nginx-controller" {
   }
 
   set {
-    type = "string"
-    name  = "controller.service.annotations.prometheus\\.io/scrape"
+    type  = "string"
+    name  = "controller.podAnnotations.prometheus\\.io/scrape"
     value = "true"
   }
 
   set {
-    type = "string"
-    name  = "controller.service.annotations.prometheus\\.io/port"
-    value = "9102"
+    type  = "string"
+    name  = "controller.podAnnotations.prometheus\\.io/path"
+    value = "/metrics"
+  }
+
+  set {
+    type  = "string"
+    name  = "controller.podAnnotations.prometheus\\.io/port"
+    value = "10254"
   }
 
 }
