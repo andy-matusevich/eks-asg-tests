@@ -18,6 +18,21 @@ resource "helm_release" "prometheus_release" {
     name  = "server\\.persistentVolume\\.storageClass"
     value = "gp2"
   }
+
+  set {
+    name  = "server\\.nodeSelector"
+    value = "node.kubernetes.io/assignment=monitoring"
+  }
+
+  set {
+    name  = "pushgateway\\.nodeSelector"
+    value = "node.kubernetes.io/assignment=monitoring"
+  }
+
+  set {
+    name  = "alertmanager\\.nodeSelector"
+    value = "node.kubernetes.io/assignment=monitoring"
+  }
 }
 
 resource "kubernetes_ingress" "prometheus" {
@@ -57,6 +72,11 @@ resource "helm_release" "loki_release" {
   create_namespace = "true"
   lint             = "true"
 
+  set {
+    name  = "nodeSelector"
+    value = "node.kubernetes.io/assignment=monitoring"
+  }
+
 }
 
 resource "random_string" "random" {
@@ -90,6 +110,11 @@ resource "helm_release" "grafana_release" {
   set {
     name  = "adminPassword"
     value = random_string.random.result
+  }
+
+  set {
+    name  = "nodeSelector"
+    value = "node.kubernetes.io/assignment=monitoring"
   }
 }
 
