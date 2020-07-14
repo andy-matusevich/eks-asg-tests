@@ -31,32 +31,6 @@ resource "helm_release" "prometheus_release" {
   values           = ["${file("values/prometheus.yaml")}"]
 }
 
-resource "kubernetes_ingress" "prometheus" {
-  depends_on = [helm_release.prometheus_release]
-
-  spec {
-    backend {
-      service_name = local.prometheus_name
-      service_port = local.prometheus_service_port
-    }
-    rule {
-      http {
-        path {
-          backend {
-            service_name = local.prometheus_name
-            service_port = local.prometheus_service_port
-          }
-          path = "/"
-        }
-      }
-    }
-  }
-  metadata {
-    name      = local.prometheus_name
-    namespace = local.kubernetes_node_assignment
-  }
-}
-
 # loki
 resource "helm_release" "loki_release" {
   depends_on       = [helm_release.ingress-nginx-controller]
