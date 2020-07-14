@@ -34,7 +34,7 @@ persistence:
   storageClassName: "gp2"
   enabled: "true"
 
-resources: {}
+resources:
   limits:
     cpu: 100m
     memory: 128Mi

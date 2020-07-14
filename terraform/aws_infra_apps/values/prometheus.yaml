@@ -1,5 +1,4 @@
 server:
-  baseURL: /prometheus
   nodeSelector:
     node.kubernetes.io/assignment: monitoring
   persistentVolume:
