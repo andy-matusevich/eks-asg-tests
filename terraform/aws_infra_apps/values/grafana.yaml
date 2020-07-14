@@ -1,7 +1,7 @@
 grafana.ini:
   server:
     root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
-    serve_from_sub_path: true
+    serve_from_sub_path: "true"
 
 datasources:
   datasources.yaml:
@@ -16,6 +16,31 @@ datasources:
       type: loki
       url: http://loki:3100
       access: proxy
+
+ingress:
+  enabled: "true"
+  path: "/grafana(/|$)(.*)"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$1"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+annotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/metrics"
+  prometheus.io/port: "3000"
+
+persistence:
+  storageClassName: "gp2"
+  enabled: "true"
+
+resources: {}
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 200m
+    memory: 200Mi
 
 nodeSelector:
   node.kubernetes.io/assignment: monitoring

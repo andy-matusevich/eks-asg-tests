@@ -1,0 +1,17 @@
+server:
+  baseURL: /prometheus
+  nodeSelector:
+    node.kubernetes.io/assignment: monitoring
+  persistentVolume:
+    storageClass: gp2
+
+
+alertmanager:
+  nodeSelector:
+    node.kubernetes.io/assignment: monitoring
+  persistentVolume:
+    storageClass: gp2
+
+pushgateway:
+  nodeSelector:
+    node.kubernetes.io/assignment: monitoring
