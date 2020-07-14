@@ -111,11 +111,6 @@ resource "helm_release" "grafana_release" {
     name  = "adminPassword"
     value = random_string.random.result
   }
-
-  set {
-    name  = "nodeSelector"
-    value = "node.kubernetes.io/assignment=monitoring"
-  }
 }
 
 resource "kubernetes_ingress" "grafana" {

@@ -16,3 +16,6 @@ datasources:
       type: loki
       url: http://loki:3100
       access: proxy
+
+nodeSelector:
+  node.kubernetes.io/assignment: monitoring
