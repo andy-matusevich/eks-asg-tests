@@ -4,7 +4,7 @@ locals {
   # prometheus
   prometheus_name            = "prometheus"
   prometheus_repository      = "https://kubernetes-charts.storage.googleapis.com/"
-  prometheus_chart_version   = "11.6.0"
+  prometheus_chart_version   = "11.8.0"
   prometheus_service_port    = "9090"
   # loki
   loki_name                  = "loki"
@@ -13,7 +13,7 @@ locals {
   # grafana
   grafana_name               = "grafana"
   grafana_repository         = "https://kubernetes-charts.storage.googleapis.com/"
-  grafana_chart_version      = "5.2.1"
+  grafana_chart_version      = "5.4.1"
   grafana_service_port       = "3000"
 }
 
@@ -28,7 +28,7 @@ resource "helm_release" "prometheus_release" {
   replace          = "false"
   create_namespace = "true"
   lint             = "true"
-  values           = ["${file("values/prometheus.yaml")}"]
+  values           = [file("values/prometheus.yaml")]
 }
 
 # loki
@@ -42,7 +42,7 @@ resource "helm_release" "loki_release" {
   replace          = "false"
   create_namespace = "true"
   lint             = "true"
-  values           = ["${file("values/loki.yaml")}"]
+  values           = [file("values/loki.yaml")]
 }
 
 # grafana
@@ -62,7 +62,7 @@ resource "helm_release" "grafana_release" {
   replace          = "false"
   create_namespace = "true"
   lint             = "true"
-  values           = ["${file("values/grafana.yaml")}"]
+  values           = [file("values/grafana.yaml")]
 
   set {
     name  = "adminPassword"
