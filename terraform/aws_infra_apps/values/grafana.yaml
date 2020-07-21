@@ -22,9 +22,13 @@ ingress:
   path: "/grafana(/|$)(.*)"
   hosts:
     - amatusevich.me
+    - www.amatusevich.me
+    - staging.amatusevich.me
   tls:
   - hosts:
-      - amatusevich.me
+    - amatusevich.me
+    - www.amatusevich.me
+    - staging.amatusevich.me
     secretName: amatusevich-tls-staging
   annotations:
     kubernetes.io/ingress.class: "nginx"
