@@ -12,7 +12,7 @@ resource "kubernetes_namespace" "cert_manager" {
 }
 
 resource "helm_release" "cert_manager_release" {
-  depends_on       = [helm_release.prometheus_release]
+  depends_on       = [kubernetes_namespace.cert_manager, helm_release.prometheus_release]
   name             = local.cert_manager_name
   chart            = local.cert_manager_name
   version          = local.cert_manager_chart_version

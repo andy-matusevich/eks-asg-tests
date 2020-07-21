@@ -49,13 +49,6 @@ resource "helm_release" "ingress-nginx-controller" {
     name  = "controller.podAnnotations.prometheus\\.io/port"
     value = "10254"
   }
-
-  set {
-    name = "hsts"
-    type  = "string"
-    value = "false"
-  }
-
 }
 
 # https://www.terraform.io/docs/providers/kubernetes/r/config_map.html

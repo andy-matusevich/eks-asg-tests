@@ -7,8 +7,19 @@ server:
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
     hosts:
-      - ""
+      - amatusevich.me
+      - www.amatusevich.me
+      - staging.amatusevich.me
+    tls:
+    - hosts:
+      - amatusevich.me
+      - www.amatusevich.me
+      - staging.amatusevich.me
+      secretName: amatusevich-tls-staging
 
 alertmanager:
   nodeSelector:

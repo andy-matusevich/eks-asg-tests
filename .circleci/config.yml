@@ -184,7 +184,7 @@ jobs:
           command: |
             cd terraform/aws_infra_apps
             kubectl apply \
-              -f values/cert-manager-clusterissuer-staging.yaml
+              -f values/cert-manager-clusterissuer-staging.yaml \
               -f values/cert-manager-clusterissuer-prod.yaml
 
 workflows:
