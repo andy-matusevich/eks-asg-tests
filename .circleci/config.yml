@@ -179,7 +179,13 @@ jobs:
               -input=false \
               -lock-timeout=30s \
               .terraform/$(basename ${PWD}).tfplan
-
+      - run:
+          name: aws infra apps | create cert-manager LE ClusterIssuers
+          command: |
+            cd terraform/aws_infra_apps
+            kubectl apply \
+              -f values/cert-manager-clusterissuer-staging.yaml
+              -f values/cert-manager-clusterissuer-prod.yaml
 
 workflows:
   eks-prod:

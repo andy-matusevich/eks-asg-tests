@@ -50,6 +50,12 @@ resource "helm_release" "ingress-nginx-controller" {
     value = "10254"
   }
 
+  set {
+    name = "hsts"
+    type  = "string"
+    value = "false"
+  }
+
 }
 
 # https://www.terraform.io/docs/providers/kubernetes/r/config_map.html
