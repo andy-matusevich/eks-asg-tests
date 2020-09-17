@@ -9,11 +9,11 @@ resource "aws_ecr_repository" "ecr" {
 }
 
 data "aws_ecr_repository" "ecr" {
-  depends_on = ["aws_ecr_repository.ecr"]
+  depends_on = [aws_ecr_repository.ecr]
   name       = var.cluster_name
 }
 
 data "aws_ecr_authorization_token" "token" {
-  depends_on  = ["aws_ecr_repository.ecr"]
+  depends_on  = [aws_ecr_repository.ecr]
   registry_id = data.aws_ecr_repository.ecr.registry_id
 }
