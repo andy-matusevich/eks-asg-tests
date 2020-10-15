@@ -8,12 +8,12 @@ locals {
   prometheus_service_port    = "9090"
   # loki
   loki_name                  = "loki"
-  loki_version               = "0.38.1"
+  loki_version               = "0.41.2"
   loki_repository            = "https://grafana.github.io/loki/charts"
   # grafana
   grafana_name               = "grafana"
   grafana_repository         = "https://kubernetes-charts.storage.googleapis.com/"
-  grafana_chart_version      = "5.4.1"
+  grafana_chart_version      = "5.5.7"
   grafana_service_port       = "3000"
 }
 
