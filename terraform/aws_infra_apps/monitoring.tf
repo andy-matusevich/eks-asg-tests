@@ -4,7 +4,7 @@ locals {
   # prometheus
   prometheus_name            = "prometheus"
   prometheus_repository      = "https://kubernetes-charts.storage.googleapis.com/"
-  prometheus_chart_version   = "11.8.0"
+  prometheus_chart_version   = "11.12.0"
   prometheus_service_port    = "9090"
   # loki
   loki_name                  = "loki"
