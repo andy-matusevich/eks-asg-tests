@@ -3,8 +3,8 @@ locals {
   kubernetes_node_assignment = "monitoring"
   # prometheus
   prometheus_name            = "prometheus"
-  prometheus_repository      = "https://kubernetes-charts.storage.googleapis.com/"
-  prometheus_chart_version   = "11.12.0"
+  prometheus_repository      = "https://prometheus-community.github.io/helm-charts"
+  prometheus_chart_version   = "11.16.2"
   prometheus_service_port    = "9090"
   # loki
   loki_name                  = "loki"
