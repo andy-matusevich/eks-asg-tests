@@ -55,7 +55,7 @@ resource "random_string" "random" {
 resource "helm_release" "grafana_release" {
   depends_on       = [helm_release.prometheus_release, helm_release.loki_release]
   name             = local.grafana_name
-  chart            = [file("grafana/")]
+  chart            = "./grafana"
   version          = local.grafana_chart_version
   repository       = local.grafana_repository
   namespace        = local.kubernetes_node_assignment
