@@ -12,23 +12,24 @@ locals {
   loki_repository            = "https://grafana.github.io/loki/charts"
   # grafana
   grafana_name               = "grafana"
-  grafana_repository         = "https://kubernetes-charts.storage.googleapis.com/"
+  grafana_repository         = "https://grafana.github.io/helm-charts"
   grafana_chart_version      = "5.5.7"
   grafana_service_port       = "3000"
 }
 
 # prometheus
 resource "helm_release" "prometheus_release" {
-  depends_on       = [helm_release.ingress-nginx-controller]
-  name             = local.prometheus_name
-  chart            = local.prometheus_name
-  version          = local.prometheus_chart_version
-  repository       = local.prometheus_repository
-  namespace        = local.kubernetes_node_assignment
-  replace          = "false"
-  create_namespace = "true"
-  lint             = "true"
-  values           = [file("values/prometheus.yaml")]
+  depends_on                 = [helm_release.ingress-nginx-controller]
+  name                       = local.prometheus_name
+  chart                      = local.prometheus_name
+  version                    = local.prometheus_chart_version
+  repository                 = local.prometheus_repository
+  namespace                  = local.kubernetes_node_assignment
+  replace                    = "false"
+  create_namespace           = "true"
+  lint                       = "true"
+  values                     = [file("values/prometheus.yaml")]
+  disable_openapi_validation = "true"
 }
 
 # loki
@@ -63,6 +64,7 @@ resource "helm_release" "grafana_release" {
   create_namespace = "true"
   lint             = "true"
   values           = [file("values/grafana.yaml")]
+  disable_openapi_validation = "true"
 
   set {
     name  = "adminPassword"
