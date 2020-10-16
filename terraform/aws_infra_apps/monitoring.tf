@@ -12,7 +12,7 @@ locals {
   loki_repository            = "https://grafana.github.io/loki/charts"
   # grafana
   grafana_name               = "grafana"
-  grafana_repository         = "https://grafana.github.io/helm-charts"
+  grafana_repository         = "https://charts.bitnami.com/bitnami"
   grafana_chart_version      = "5.7.10"
   grafana_service_port       = "3000"
 }
@@ -55,7 +55,7 @@ resource "random_string" "random" {
 resource "helm_release" "grafana_release" {
   depends_on       = [helm_release.prometheus_release, helm_release.loki_release]
   name             = local.grafana_name
-  chart            = local.grafana_name
+  chart            = [file("grafana/")]
   version          = local.grafana_chart_version
   repository       = local.grafana_repository
   namespace        = local.kubernetes_node_assignment
