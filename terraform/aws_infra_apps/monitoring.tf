@@ -13,7 +13,7 @@ locals {
   # grafana
   grafana_name               = "grafana"
   grafana_repository         = "https://grafana.github.io/helm-charts"
-  grafana_chart_version      = "5.5.7"
+  grafana_chart_version      = "5.7.10"
   grafana_service_port       = "3000"
 }
 
@@ -29,7 +29,6 @@ resource "helm_release" "prometheus_release" {
   create_namespace           = "true"
   lint                       = "true"
   values                     = [file("values/prometheus.yaml")]
-  disable_openapi_validation = "true"
 }
 
 # loki
@@ -64,7 +63,6 @@ resource "helm_release" "grafana_release" {
   create_namespace = "true"
   lint             = "true"
   values           = [file("values/grafana.yaml")]
-  disable_openapi_validation = "true"
 
   set {
     name  = "adminPassword"
