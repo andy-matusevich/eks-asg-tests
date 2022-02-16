@@ -21,7 +21,7 @@ locals {
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = var.cluster_name
-  cluster_version = "1.22"
+  cluster_version = "1.21"
   #subnets         = module.vpc.private_subnets
 
   tags = {
