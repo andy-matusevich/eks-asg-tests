@@ -24,6 +24,19 @@ module "eks" {
   cluster_version = "1.21"
   #subnets         = module.vpc.private_subnets
 
+  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access  = true
+
+  cluster_addons = {
+    coredns = {
+      resolve_conflicts = "OVERWRITE"
+    }
+    kube-proxy = {}
+    vpc-cni = {
+      resolve_conflicts = "OVERWRITE"
+    }
+  }
+
   tags = {
     repo        = var.cluster_name
     environment = var.environment
@@ -32,24 +45,33 @@ module "eks" {
   vpc_id = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-#  worker_groups = [
-#    {
-#      name                          = "monitoring-group"
-#      instance_type                 = var.eks_instance_type_monitoring
-#      asg_desired_capacity          = 2
-#      additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
-#      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=monitoring"
-#    },
-#    {
-#      name                          = "applications-group"
-#      instance_type                 = var.eks_instance_type_applications
-#      asg_desired_capacity          = 1
-#      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
-#      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=applications"
-#    },
-#  ]
+  self_managed_node_groups = {
+    default = {}
+  }
 
 }
+
+#module "eks_managed_node_group_1" {
+#  source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+#
+#  name            = "${var.cluster_name}-ng-1"
+#  cluster_name    = var.cluster_name
+#  cluster_version = "1.21"
+#
+#  vpc_id = module.vpc.vpc_id
+#  subnet_ids = module.vpc.private_subnets
+#
+#  min_size     = 1
+#  max_size     = 3
+#  desired_size = 1
+#
+#  instance_types = ["t2.small"]
+#
+#  tags = {
+#    repo        = var.cluster_name
+#    environment = var.environment
+#  }
+#}
 
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_id
