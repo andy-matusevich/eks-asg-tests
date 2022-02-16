@@ -7,11 +7,11 @@ provider "kubernetes" {
 }
 
 variable "eks_instance_type_monitoring" {
-  default = "t2.micro"
+  default = "t2.small"
 }
 
 variable "eks_instance_type_applications" {
-  default = "t2.micro"
+  default = "t2.small"
 }
 
 locals {
@@ -23,7 +23,7 @@ module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = var.cluster_name
   cluster_version = "1.22"
-  subnets         = module.vpc.private_subnets
+  #subnets         = module.vpc.private_subnets
 
   tags = {
     repo        = var.cluster_name
@@ -32,22 +32,22 @@ module "eks" {
 
   vpc_id = module.vpc.vpc_id
 
-  worker_groups = [
-    {
-      name                          = "monitoring-group"
-      instance_type                 = var.eks_instance_type_monitoring
-      asg_desired_capacity          = 2
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
-      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=monitoring"
-    },
-    {
-      name                          = "applications-group"
-      instance_type                 = var.eks_instance_type_applications
-      asg_desired_capacity          = 1
-      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
-      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=applications"
-    },
-  ]
+#  worker_groups = [
+#    {
+#      name                          = "monitoring-group"
+#      instance_type                 = var.eks_instance_type_monitoring
+#      asg_desired_capacity          = 2
+#      additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
+#      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=monitoring"
+#    },
+#    {
+#      name                          = "applications-group"
+#      instance_type                 = var.eks_instance_type_applications
+#      asg_desired_capacity          = 1
+#      additional_security_group_ids = [aws_security_group.worker_group_mgmt_two.id]
+#      kubelet_extra_args            = "--node-labels=node.kubernetes.io/assignment=applications"
+#    },
+#  ]
 
 }
 
