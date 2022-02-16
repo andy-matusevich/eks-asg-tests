@@ -20,7 +20,7 @@ aliases:
       cd terraform/aws_infra
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/$(basename ${PWD}).tfstate" \
-        -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
+        -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_PROJECT_USERNAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
   - &aws_infra_apps_init
     name: aws infra apps | init
@@ -28,7 +28,7 @@ aliases:
       cd terraform/aws_infra_apps
       terraform init \
         -backend-config="key=${CI_ENVIRONMENT}/${AWS_REGION}/$(basename ${PWD}).tfstate" \
-        -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}" \
+        -backend-config="bucket=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_PROJECT_USERNAME}" \
         -backend-config="region=${AWS_DEFAULT_REGION}"
   # git branches filters
   - &except_master_branch
@@ -60,7 +60,7 @@ jobs:
           name: aws state | apply tf state s3 bucket
           command: |
             cd terraform/aws_state
-            aws s3api get-bucket-location --bucket ${CIRCLE_PROJECT_REPONAME} >/dev/null 2>&1 && \
+            aws s3api get-bucket-location --bucket ${CIRCLE_PROJECT_REPONAME}-${CIRCLE_PROJECT_USERNAME} >/dev/null 2>&1 && \
             echo -e "S3 bucket is already exists" || \
             terraform apply \
               -auto-approve \
@@ -70,7 +70,7 @@ jobs:
               -refresh=true \
               -target=aws_s3_bucket.tfstate-storage-s3 \
               -var="state_region=${AWS_DEFAULT_REGION}" \
-              -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+              -var="state_bucket=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_PROJECT_USERNAME}" \
               -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks"
       - run:
           name: aws state | apply lock dynamodb table
@@ -88,7 +88,7 @@ jobs:
               -refresh=true \
               -target=aws_dynamodb_table.tfstate-locks \
               -var="state_region=${AWS_REGION}" \
-              -var="state_bucket=${CIRCLE_PROJECT_REPONAME}" \
+              -var="state_bucket=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_PROJECT_USERNAME}" \
               -var="state_lock_table=${CIRCLE_PROJECT_REPONAME}-${CI_ENVIRONMENT}-tf-state-locks"
 
   aws_infra:
