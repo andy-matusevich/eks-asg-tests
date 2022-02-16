@@ -12,23 +12,23 @@ locals {
   loki_repository            = "https://grafana.github.io/loki/charts"
   # grafana
   grafana_name               = "grafana"
-  grafana_repository         = "https://kubernetes-charts.storage.googleapis.com/"
-  grafana_chart_version      = "5.5.7"
+  grafana_repository         = "https://charts.bitnami.com/bitnami"
+  grafana_chart_version      = "5.7.10"
   grafana_service_port       = "3000"
 }
 
 # prometheus
 resource "helm_release" "prometheus_release" {
-  depends_on       = [helm_release.ingress-nginx-controller]
-  name             = local.prometheus_name
-  chart            = local.prometheus_name
-  version          = local.prometheus_chart_version
-  repository       = local.prometheus_repository
-  namespace        = local.kubernetes_node_assignment
-  replace          = "false"
-  create_namespace = "true"
-  lint             = "true"
-  values           = [file("values/prometheus.yaml")]
+  depends_on                 = [helm_release.ingress-nginx-controller]
+  name                       = local.prometheus_name
+  chart                      = local.prometheus_name
+  version                    = local.prometheus_chart_version
+  repository                 = local.prometheus_repository
+  namespace                  = local.kubernetes_node_assignment
+  replace                    = "false"
+  create_namespace           = "true"
+  lint                       = "true"
+  values                     = [file("values/prometheus.yaml")]
 }
 
 # loki
@@ -55,7 +55,7 @@ resource "random_string" "random" {
 resource "helm_release" "grafana_release" {
   depends_on       = [helm_release.prometheus_release, helm_release.loki_release]
   name             = local.grafana_name
-  chart            = local.grafana_name
+  chart            = "./grafana"
   version          = local.grafana_chart_version
   repository       = local.grafana_repository
   namespace        = local.kubernetes_node_assignment
